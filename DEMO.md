@@ -1,5 +1,7 @@
 # Run NilaSaatchi AI on a new machine
 
+> **On Windows?** Use `WINDOWS.md` instead: double-click `SETUP-WINDOWS.cmd`, then `START-WINDOWS.cmd` (no WSL or bash needed).
+
 ## What you need
 - **OS:** Ubuntu/Debian Linux, macOS, or Windows 10/11 with **WSL2** (run everything inside the Ubuntu terminal).
 - **Docker:** Docker Desktop (macOS/Windows) or Docker Engine (Linux), **running**.
