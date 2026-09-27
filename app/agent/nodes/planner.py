@@ -26,7 +26,7 @@ from app.agent.state import (
     planner_schema,
 )
 from app.domains import get_pack
-from app.domains.common_slots import SCOPE_SLOTS
+from app.domains.common_slots import FILTER_SLOTS, SCOPE_SLOTS
 from app.tools.registry import ToolError
 
 PROMPTS = Path(__file__).resolve().parents[3] / "prompts"
@@ -65,7 +65,7 @@ def fill_from_slots(plan: ExecutionPlan, registry, slots: Slots | None) -> tuple
         if s.tool and s.tool in registry:
             fields = registry.get(s.tool).input_model.model_fields
             for name, f in fields.items():
-                if name in SCOPE_SLOTS and not f.is_required() and s.args.get(name) in (None, []) \
+                if name in (*SCOPE_SLOTS, *FILTER_SLOTS) and not f.is_required() and s.args.get(name) in (None, [], {}) \
                         and sd.get(name) not in (None, []):
                     s.args[name] = sd[name]          # optional scope arg omitted (some models emit args={})
                     notes.append(f"{s.id}.{name}")

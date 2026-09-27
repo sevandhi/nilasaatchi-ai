@@ -34,7 +34,7 @@ Every number below was measured on the running system (sources in `docs/metrics.
 | Land-use model (LightGBM, village-held-out) | **93.6%** accuracy (macro-F1 0.634) | thousands of predictions at $0 |
 | Findings re-computed from source data | **37/37 (100%)** | random sample, all 8 categories |
 | Findings checked against the scanned page | extent **5/5**, compensation **1/5** | compensation findings are shown as leads |
-| Agent answers vs SQL ground truth (8 incl. unseen + Tamil) | **8/8** on 27 Sep; **3/8** on a re-run (28 Sep) | the free planner model varies; see §4 |
+| Agent answers vs SQL ground truth | **24/25** demo questions (96%) after the filter fix; original 8 hard queries 5/8 (8/8 on 27 Sep, 3/8 before the fix) | the free planner varies; the fix fills filters from the question |
 
 ## 4. Multi-model routing (Task 1 core)
 - **10 routed models from 5 providers**, each with a job: Gemini (planning, judging), Cohere (critic), Bedrock Ministral 8B/3B (tables, classification), Groq Qwen/gpt-oss (SQL, fallback), a local Qwen fallback. Our own LightGBM model classifies land use locally.
@@ -48,7 +48,7 @@ Every number below was measured on the running system (sources in `docs/metrics.
 | All open-weight | 0/8 (fell back to a default plan) | 0% | 0 | 86 s |
 | All proprietary | 6/8 | 90% | 24 | 55 s |
 
-**Reading:** routing gives the most reliable plans, the most cross-checking and the fastest answers. Open-only models could not plan or critique at all. Answer correctness still depends on the free planner model filling in optional filters, so our fix (automatic filters from the question) is the next step.
+**Reading:** routing gives the most reliable plans, the most cross-checking and the fastest answers. Open-only models could not plan or critique at all. Answer correctness depended on the free planner filling optional filters; filling them from the question lifted the 25 demo questions to 24/25.
 
 ## 5. Trust and safety
 | | |
@@ -69,6 +69,6 @@ Every number below was measured on the running system (sources in `docs/metrics.
 
 ## Known limits (we say these first)
 - **Extraction** is below target on fresh pages, and **compensation findings** often trip on merged cells and tree columns, so they are leads for review.
-- **Agent speed** is ~41–55 s per question, and **answer accuracy varies** with the free planner model (8/8 → 3/8 between runs).
+- **Agent speed** is ~41–55 s per question, and **answer accuracy varies** with the free planner model; composite questions (e.g. top-5 by rupee difference) are the weakest (5/8).
 - The satellite model's macro-F1 is **0.634** (target 0.80). Outputs are signals for field verification, not verdicts.
 - The **cloud version is read-only.** Uploads and the live agent run in the full app, because the event rules allow no database server.

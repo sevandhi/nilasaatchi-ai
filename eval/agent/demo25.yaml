@@ -1,0 +1,84 @@
+# 25 demo questions for the Agent console (docs/ui/03-demo-test-data.md §B). Same format as
+# eval/queries.yaml agent_eval: the reference answer is computed from the live database at run time
+# (numbers_sql: every value must appear in the agent's tables/KPIs; parcels_sql: every uid must be shown).
+# Run: PYTHONPATH=. uv run python -m eval.agent.run --queries eval/agent/demo25.yaml --out data/eval/demo25.json
+agent_eval:
+  # --- one parcel: paper vs planet --------------------------------------------------------------
+  - id: q01
+    request: "Verify Melathattaparai survey 233: what do the documents claim, and what does the satellite show?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM v_parcel_events WHERE parcel_uid = 'Melathattaparai|233'"}
+  - id: q02
+    request: "Show the acquisition timeline of Umarikottai survey 168."
+    expect: {numbers_sql: "SELECT count(*) AS n FROM v_parcel_events WHERE parcel_uid = 'Umarikottai|168'"}
+  - id: q03
+    request: "How many acquisition events are recorded for Allikulam survey 18/17?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM v_parcel_events WHERE parcel_uid = 'Allikulam|18/17'"}
+  - id: q04
+    request: "Did the vegetation of Allikulam survey 18/17 drop after possession compared with never-acquired farmland?"
+    expect: {parcels_sql: "SELECT 'Allikulam|18/17' AS parcel_uid"}
+  - id: q05
+    request: "How many acquisition events are recorded for Keelathattaparai survey 359/2?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM v_parcel_events WHERE parcel_uid = 'Keelathattaparai|359/2'"}
+  # --- findings ---------------------------------------------------------------------------------
+  - id: q06
+    request: "How many compensation mismatch findings are there?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'COMPENSATION_MISMATCH'"}
+  - id: q07
+    request: "How many high severity compensation mismatches are there?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'COMPENSATION_MISMATCH' AND severity = 'high'"}
+  - id: q08
+    request: "List the high severity extent mismatches."
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'EXTENT_MISMATCH' AND severity = 'high'"}
+  - id: q09
+    request: "How many extent mismatches are there in Peroorani?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'EXTENT_MISMATCH' AND village = 'Peroorani'"}
+  - id: q10
+    request: "Which parcels lost vegetation vigour after possession compared with the control farms?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'PV3_POST_POSSESSION_ACTIVITY' AND metrics->>'signal' = 'vigour_drop'"}
+  - id: q11
+    request: "How many parcels still look like farmland after possession?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'PV3_POST_POSSESSION_ACTIVITY' AND metrics->>'signal' = 'still_farmed_lead'"}
+  - id: q12
+    request: "Show the idle land bank: how many idle blocks are there?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'PV4_IDLE_LAND_BANK'"}
+  - id: q13
+    request: "Which idle land blocks are within 5 km of a substation?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'PV4_IDLE_LAND_BANK' AND (metrics->>'min_substation_km')::float <= 5"}
+  - id: q14
+    request: "How many document version conflicts are there between the proposal and the sanction?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'DOC_VERSION_CONFLICT'"}
+  - id: q15
+    request: "List the FMB map quality problems in Melathattaparai."
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'FMB_QUALITY' AND village = 'Melathattaparai'"}
+  - id: q16
+    request: "How many high severity FMB overlaps are there?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'FMB_QUALITY' AND severity = 'high'"}
+  - id: q17
+    request: "Show the land classification conflicts between the documents and the satellite."
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'PV1_CLASSIFICATION_CONFLICT'"}
+  - id: q18
+    request: "How many extraction errors were flagged for review?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'EXTRACTION_ERROR'"}
+  - id: q19
+    request: "How many findings are there in Umarikottai?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE village = 'Umarikottai'"}
+  - id: q20
+    request: "Show medium severity post-possession findings in Allikulam."
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'PV3_POST_POSSESSION_ACTIVITY' AND severity = 'medium' AND village = 'Allikulam'"}
+  # --- more findings by village / severity ----------------------------------------------------------------------------
+  - id: q21
+    request: "How many findings are there in Allikulam?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE village = 'Allikulam'"}
+  - id: q22
+    request: "List the high severity findings in Keelathattaparai."
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE village = 'Keelathattaparai' AND severity = 'high'"}
+  - id: q23
+    request: "Show the medium severity FMB map quality problems."
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'FMB_QUALITY' AND severity = 'medium'"}
+  - id: q24
+    request: "How many low severity extent mismatches are there in Allikulam?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'EXTENT_MISMATCH' AND severity = 'low' AND village = 'Allikulam'"}
+  # --- Tamil ------------------------------------------------------------------------------------
+  - id: q25
+    request: "மேலத்தட்டப்பாறை புல எண் 233 பற்றி ஆவணங்களும் செயற்கைக்கோளும் என்ன சொல்கின்றன?"
+    expect: {numbers_sql: "SELECT count(*) AS n FROM v_parcel_events WHERE parcel_uid = 'Melathattaparai|233'"}

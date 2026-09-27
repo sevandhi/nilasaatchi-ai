@@ -69,3 +69,6 @@ def attachment_kind(a: Attachment) -> str:
 
 # Scope slots the planner may copy into OPTIONAL tool args the model left empty (some models emit args={}).
 SCOPE_SLOTS = ("villages", "blocks", "parcel_uids")
+# optional filter args filled from same-named slots when the planner leaves them empty (domain packs
+# put these slots under Slots.extra); a value the planner wrote is never overridden
+FILTER_SLOTS = ("categories", "severities", "signal", "metric_max")

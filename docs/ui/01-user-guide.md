@@ -40,8 +40,8 @@ The agent console uses AI models; the free tiers need the keys in `.env`.
 |---|---|
 | Map | FMB parcels (subdivision polygons) and the park boundary on a free OpenStreetMap basemap |
 | Layer toggles | Major/other roads, waterbodies, substations, rail, schools, SIPCOT parks, FMB overlaps (parcels drawn on top of each other), parcels outside their survey, control-group cells (never-acquired farmland 2–6 km outside the park, used for the satellite comparison) |
-| Colour-by | Colour parcels by **acquisition stage**, **number of findings**, **land use in a season**, change vs control group, or match status |
-| Season slider | Pick a season from 2019 to 2026 (or press play); parcels recolour by that season's land use (cropped, bare/fallow, trees/scrub…) |
+| Colour-by | **Acquisition stage (today)**, **acquisition stage by season** (follows the slider), **number of findings**, **land use in a season** (follows the slider), **change vs never-acquired farmland after possession**, **document link level** (parcel / survey / block-level / none) |
+| Season slider | Pick a season from 2018-rabi (imagery starts Jan 2019, so partial) to 2026 (or press play). It recolours the two seasonal options: land use (cropped, bare/fallow, trees/scrub…) and the legal stage reached by then. Colours stay fixed per value; grey = not yet / no data |
 | Legend | Always visible; explains the colours |
 | Hover card | Parcel ID, village, area, stage, number of findings |
 | **Click a parcel** | Opens that parcel on the **Parcel** page |
@@ -63,10 +63,10 @@ The agent console uses AI models; the free tiers need the keys in `.env`.
 | Component | What it does |
 |---|---|
 | Summary chart | Findings by category × severity (high/medium/low) |
-| Filters | Category, severity, village, block, evidence level (parcel vs block) |
+| Filters | Dropdowns for category (plain names), severity, village, block and evidence level, each listing the values in the data with counts; **Clear filters** resets them |
 | Table | 1,388 findings; click a row to open its evidence pack |
 | Idle land bank | Possessed land showing no clearing or construction, by block (hectares, distance to road/substation) |
-| **Evidence pack** | *Paper side*: the document page and extracted values. *Planet side*: satellite numbers and chips. Plus the checks run, verdict, confidence and caveats. Export as JSON |
+| **Evidence pack** | Opens at the **top of the page** when you click a finding. It starts with **"In simple words"**: an AI-written explanation for non-experts (what was found, why it matters, how sure we are, what to check next; a standard text if no AI model answers). Below: *paper side* (document page and extracted values), *planet side* (satellite numbers and chips), the checks, verdict, confidence and caveats. Export as JSON |
 
 **Finding categories:**
 - post-possession activity (vs controls);
@@ -112,11 +112,14 @@ The agent console uses AI models; the free tiers need the keys in `.env`.
 | Privacy audit | Confirms that no owner data went to models that train on inputs |
 
 ## Page 8: Review queue
-**Purpose:** human checking of uncertain extractions (handwriting, blurred scans, failed arithmetic checks, a 10% owner-name sample).
+**Purpose:** a person checks pages the AI was unsure about (handwriting, blurred scans, numbers that don't add up, text read as a table).
 | Component | What it does |
 |---|---|
-| Queue list | Each item with the page crop, the AI's candidate values and the reason it was queued |
-| Accept / Edit / Reject | Records the human decision (it becomes verified data) |
+| Queue item | The page image, why a human is needed (in plain words), the AI's confidence, and how many rows were read from the page |
+| **Approve values** | The values read from the page are right: all its rows become *approved* |
+| **Correct values** → **Save corrections** | A table of the rows read from the page; change only the wrong values (survey, extents, amounts, patta, land class). Changed rows become *corrected*, with the AI's original kept for audit; the rest become *approved*. Owner names stay masked and can't be edited |
+| **Reject page** | The page is unreadable or not usable: its rows are excluded |
+| **Confirm: nothing to extract** | For pages where no rows were read |
 
 ## How the pages connect
 ```

@@ -48,10 +48,26 @@ OUTSIDE_SURVEY_COLUMNS = ["uid", "village", "survey_no", "outside_ha", "outside_
 
 # Parcel properties added on top of LAYER_REGISTRY["parcel"]["columns"] (ui-spec.md: "parcel
 # properties enriched with stage, finding counts, the season state ... and the DiD signal").
-PARCEL_ENRICH_COLUMNS = ["current_stage", "evidence_level", "stalled_flag", "n_findings"]
+PARCEL_ENRICH_COLUMNS = ["current_stage", "evidence_level", "stalled_flag", "n_findings", "did_signal", "match_status"]
+
+# map colour-by: change vs never-acquired farmland after possession (from the PV3 findings + parcel_did),
+# and how the parcel is linked to documents (v_parcel_lifecycle.evidence_level)
+DID_SIGNAL_SQL = ("CASE WHEN pv.signal = 'vigour_drop' THEN 'Vigour dropped vs controls' "
+                  "WHEN pv.signal = 'still_farmed_lead' THEN 'Still farmland-like (lead)' "
+                  "WHEN dd.parcel_uid IS NOT NULL THEN 'No significant change' ELSE 'No possession evidence' END")
+MATCH_STATUS_SQL = ("CASE lc.evidence_level WHEN 'parcel' THEN 'Parcel-level documents' "
+                    "WHEN 'survey_level' THEN 'Survey-level documents' WHEN 'block_level' THEN 'Block-level documents only' "
+                    "ELSE 'No documents linked' END")
 
 LAYER_NAMES = sorted({*LAYER_REGISTRY, "fmb_qa", "fmb_overlaps", "outside_survey"})
 DEFAULT_LIMIT = 5000
+
+
+def season_end(ag_year: int, season: str):
+    """Last day of an ag-year season (config/seasons.yaml: ag_year Y = Jun Y .. May Y+1)."""
+    import datetime as dt
+    ends = {"kharif": (ag_year, 9, 30), "rabi": (ag_year + 1, 2, 28), "summer": (ag_year + 1, 5, 31)}
+    return dt.date(*ends[season]) if season in ends else None
 
 
 def simplify_tolerance(zoom: int | None) -> float:
@@ -111,9 +127,15 @@ def layer_geojson(conn: psycopg.Connection, name: str, *, bbox: tuple[float, flo
             sql_from = (f"{spec['table']} p "
                        "LEFT JOIN v_parcel_lifecycle lc ON lc.parcel_uid = p.parcel_uid "
                        "LEFT JOIN (SELECT parcel_uid, count(*) AS n_findings FROM finding "
-                       "WHERE status = 'open' GROUP BY 1) fc ON fc.parcel_uid = p.parcel_uid")
+                       "WHERE status = 'open' GROUP BY 1) fc ON fc.parcel_uid = p.parcel_uid "
+                       "LEFT JOIN (SELECT DISTINCT ON (parcel_uid) parcel_uid, metrics->>'signal' AS signal FROM finding "
+                       "WHERE category = 'PV3_POST_POSSESSION_ACTIVITY' AND status = 'open' "
+                       "ORDER BY parcel_uid, (metrics->>'signal' = 'vigour_drop') DESC) pv ON pv.parcel_uid = p.parcel_uid "
+                       "LEFT JOIN (SELECT DISTINCT parcel_uid FROM parcel_did WHERE event = 't_possession' AND did IS NOT NULL) dd "
+                       "ON dd.parcel_uid = p.parcel_uid")
             select_cols += (", lc.current_stage AS current_stage, lc.evidence_level AS evidence_level, "
-                           "lc.stalled_flag AS stalled_flag, COALESCE(fc.n_findings, 0) AS n_findings")
+                           "lc.stalled_flag AS stalled_flag, COALESCE(fc.n_findings, 0) AS n_findings, "
+                           f"{DID_SIGNAL_SQL} AS did_signal, {MATCH_STATUS_SQL} AS match_status")
             columns += PARCEL_ENRICH_COLUMNS
             if season and "-" in season:
                 ag_year_s, _, season_name = season.partition("-")
@@ -127,6 +149,15 @@ def layer_geojson(conn: psycopg.Connection, name: str, *, bbox: tuple[float, flo
                     params.extend([ag_year, season_name])
                     select_cols += ", ps.state AS season_state, ps.p_state AS season_p_state"
                     columns += ["season_state", "season_p_state"]
+                    # furthest legal stage reached by the end of that season (map: stage follows the slider)
+                    end = season_end(ag_year, season_name)
+                    if end:
+                        sql_from += (" LEFT JOIN LATERAL (SELECT e.stage FROM v_parcel_events e "
+                                    "WHERE e.parcel_uid = p.parcel_uid AND e.event_date <= %s AND e.stage <> 'EXEMPTION' "
+                                    "ORDER BY e.stage_ord DESC, e.event_date DESC LIMIT 1) st ON true")
+                        params.append(end)
+                        select_cols += ", COALESCE(st.stage, 'NOT_STARTED') AS stage_at_season"
+                        columns += ["stage_at_season"]
         else:
             geom_ref = spec["geom"]
             select_cols = ", ".join(spec["columns"])

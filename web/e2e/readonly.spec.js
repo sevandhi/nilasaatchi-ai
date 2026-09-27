@@ -69,8 +69,8 @@ test("review queue keeps viewing but hides accept/edit/reject", async ({ page })
   await page.goto("/review");
   const item = page.getByTestId("review-item").first();
   await expect(item).toBeVisible({ timeout: 15000 });
-  await expect(item.getByRole("button", { name: /Accept/i })).toHaveCount(0);
+  await expect(item.getByRole("button", { name: /Approve|Confirm/i })).toHaveCount(0);
   await expect(item.getByRole("button", { name: /Reject/i })).toHaveCount(0);
-  await expect(item.getByRole("button", { name: /^Edit$/i })).toHaveCount(0);
+  await expect(item.getByRole("button", { name: /Correct values/i })).toHaveCount(0);
   await page.screenshot({ path: "test-results/readonly-05-review.png", fullPage: true });
 });

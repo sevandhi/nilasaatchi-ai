@@ -1,18 +1,20 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapView } from "../components/map/MapView.jsx";
-import { SeasonSlider } from "../components/map/SeasonSlider.jsx";
+import { PARTIAL_SEASONS, SeasonSlider } from "../components/map/SeasonSlider.jsx";
 import { useStore } from "../store/useStore.js";
 import { STAGE_ORDER } from "../lib/colorScale.js";
 import { LANDUSE_STATES } from "../lib/landuse.js";
 
 const COLOR_BY_OPTIONS = [
   { key: "none", label: "None (single colour)" },
-  { key: "stage", label: "Acquisition stage (lifecycle)", property: "current_stage", scale: "categorical", order: STAGE_ORDER },
+  { key: "stage", label: "Acquisition stage (today)", property: "current_stage", scale: "categorical", order: STAGE_ORDER },
+  { key: "stage_season", label: "Acquisition stage by season (slider)", property: "stage_at_season", scale: "categorical", seasonal: true,
+    order: ["NOT_STARTED", "GO_AS_LPS", "SEC_3_1", "SEC_3_2", "PRICE_NEGOTIATION", "POSSESSION_NOTICE", "AWARD", "PAYMENT", "POSSESSION", "MUTATION"] },
   { key: "finding_count", label: "Finding count (severity/category needs parcel drill-down)", property: "n_findings", scale: "sequential" },
-  { key: "landuse_state", label: "Land-use state (season slider)", property: "season_state", scale: "categorical", order: LANDUSE_STATES },
-  { key: "did_signal", label: "DiD vs controls (parcel-level only — see Parcel page)", property: "did_signal", scale: "sequential" },
-  { key: "match_status", label: "Match status (from the last agent run only)", property: "match_status", scale: "categorical" },
+  { key: "landuse_state", label: "Land-use state (season slider)", property: "season_state", scale: "categorical", order: LANDUSE_STATES, seasonal: true },
+  { key: "did_signal", label: "Change vs never-acquired farmland (after possession)", property: "did_signal", scale: "categorical", order: ["Vigour dropped vs controls", "Still farmland-like (lead)", "No significant change", "No possession evidence"] },
+  { key: "match_status", label: "Document link level", property: "match_status", scale: "categorical", order: ["Parcel-level documents", "Survey-level documents", "Block-level documents only", "No documents linked"] },
 ];
 
 const LAYERS = [
@@ -36,7 +38,7 @@ export function MapWorkspace() {
   const navigate = useNavigate();
   const { selectParcel, colorBy: colorByKey, setColorBy, selection, filters } = useStore((s) => s);
   const colorBy = useMemo(() => COLOR_BY_OPTIONS.find((o) => o.key === colorByKey) || COLOR_BY_OPTIONS[0], [colorByKey]);
-  const seasonForColor = colorBy.property === "season_state" ? filters.season : null;
+  const seasonForColor = colorBy.seasonal ? filters.season : null;
 
   function onParcelClick(uid) {
     selectParcel(uid);
@@ -63,7 +65,13 @@ export function MapWorkspace() {
             ))}
           </select>
         </label>
-        <SeasonSlider recolorNote={colorBy.property === "season_state" ? "The map shows each parcel's land-use state for the selected season." : "Choose \"Land-use state\" above to recolour the map by season."} />
+        {colorBy.seasonal && <SeasonSlider recolorNote={colorBy.seasonal
+          ? (colorBy.property === "season_state" ? "The map shows each parcel's land-use state for the selected season." : "The map shows the furthest legal stage each parcel had reached by the end of the selected season.")
+            + (PARTIAL_SEASONS[filters.season] ? ` Note: ${PARTIAL_SEASONS[filters.season]}.` : "")
+          : ""} />}
+        {!colorBy.seasonal && colorBy.key !== "none" && (
+          <p className="text-[11px] text-gray-500">This colouring does not change over time. Choose &quot;Land-use state&quot; or &quot;Acquisition stage by season&quot; to use the season slider.</p>
+        )}
         <p className="text-[11px] leading-snug text-gray-500">
           Click a parcel to open its Parcel page. Use the layer list (right) to show roads, water, substations, map-quality issues and the control-group farmland.
         </p>

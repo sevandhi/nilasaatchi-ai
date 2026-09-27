@@ -2,14 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { useStore } from "../../store/useStore.js";
 import { t } from "../../i18n/labels.js";
 
-// Kharif (Jun-Sep) / Rabi (Oct-Feb) / Summer (Mar-May), 2019 -> now (docs/team/07-phase3…).
+// Kharif (Jun-Sep) / Rabi (Oct-Feb) / Summer (Mar-May) of ag-year Y (Jun Y .. May Y+1).
+// Sentinel-2 data starts in Jan 2019, so the first season is 2018-rabi (Oct 2018-Feb 2019, partial)
+// and 2018-kharif (no imagery) is skipped.
 function buildSeasons() {
-  const seasons = [];
+  const seasons = ["2018-rabi", "2018-summer"];
   for (let y = 2019; y <= 2026; y++) {
     seasons.push(`${y}-kharif`, `${y}-rabi`, `${y}-summer`);
   }
   return seasons;
 }
+export const PARTIAL_SEASONS = { "2018-rabi": "satellite imagery starts in Jan 2019, so this season is partial" };
 const SEASONS = buildSeasons();
 
 /** Scrubs seasons 2019->now (phase6 must-have). Recolouring the map by season land-use state

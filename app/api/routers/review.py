@@ -42,32 +42,98 @@ async def review_queue(status: str = "open", reason: str | None = None,
     return ReviewListResponse(items=[ReviewItem(**r) for r in rows], total=total)
 
 
-@router.post("/review/{review_id}", response_model=ReviewDecisionResponse)
-async def decide_review(review_id: int, body: ReviewDecisionRequest) -> ReviewDecisionResponse:
+# Values a reviewer may correct on a row read from the page (owner names are never editable here:
+# they stay masked in the UI; bank-like fields are never stored).
+EDITABLE_FIELDS = {"survey_no": str, "sub_div": str, "extent_ha": float, "extent_ac": float, "amount_rs": float,
+                   "tree_amount_rs": float, "land_amount_rs": float, "patta_no": str, "classification": str}
+ROW_SCHEMAS = ("parcel_row", "form_f", "payment_instrument", "village_totals", "price_rate")
+FACT_TYPES = {"extent_ha", "extent_ac", "amount_rs", "patta_no", "classification"}
+
+
+def _clean(values: dict) -> dict:
+    out = {}
+    for k, v in values.items():
+        if k not in EDITABLE_FIELDS:
+            raise HTTPException(status_code=400, detail=f"field {k!r} cannot be edited")
+        if v in (None, ""):
+            out[k] = None
+            continue
+        try:
+            out[k] = EDITABLE_FIELDS[k](v) if EDITABLE_FIELDS[k] is float else str(v).strip()
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail=f"{k} must be a number") from None
+    return out
+
+
+@router.get("/review/{review_id}/rows")
+async def review_rows(review_id: int) -> dict:
+    """The table rows the AI read from this review item's page (the values a reviewer can confirm or correct)."""
     def _run():
         with get_conn() as conn:
-            row = conn.execute("SELECT id, extraction_id, status FROM review_queue WHERE id = %s",
-                              (review_id,)).fetchone()
-            if row is None:
+            item = conn.execute("SELECT page_id, extraction_id FROM review_queue WHERE id = %s", (review_id,)).fetchone()
+            if item is None:
                 return None
-            conn.execute(
-                "UPDATE review_queue SET status = 'decided', decided_value = %s, decided_by = %s, "
-                "decided_at = now() WHERE id = %s",
-                (json.dumps(body.corrected_value) if body.corrected_value else None, body.decided_by, review_id),
-            )
-            review_status = None
-            if row["extraction_id"] is not None:
-                review_status = body.decision  # approved | corrected | rejected (matches the CHECK constraint)
-                if body.decision == "corrected" and body.corrected_value:
-                    conn.execute(
-                        "UPDATE extraction SET row_json = row_json || %s::jsonb, review_status = %s "
-                        "WHERE id = %s", (json.dumps(body.corrected_value), review_status, row["extraction_id"]),
-                    )
+            rows = conn.execute(
+                "SELECT id, record_no, schema_name, row_json, confidence, review_status FROM extraction "
+                "WHERE (page_id = %s OR id = %s) AND schema_name = ANY(%s) ORDER BY record_no",
+                (item["page_id"], item["extraction_id"], list(ROW_SCHEMAS))).fetchall()
+            return [{"extraction_id": r["id"], "record_type": r["schema_name"], "confidence": r["confidence"],
+                     "review_status": r["review_status"],
+                     "values": {k: (r["row_json"] or {}).get(k) for k in EDITABLE_FIELDS},
+                     "ai_original": (r["row_json"] or {}).get("ai_original")} for r in rows]
+    rows = await asyncio.to_thread(_run)
+    if rows is None:
+        raise HTTPException(status_code=404, detail="review item not found")
+    return {"review_id": review_id, "editable_fields": list(EDITABLE_FIELDS), "rows": rows}
+
+
+@router.post("/review/{review_id}", response_model=ReviewDecisionResponse)
+async def decide_review(review_id: int, body: ReviewDecisionRequest) -> ReviewDecisionResponse:
+    """approved = the values read from the page are right; corrected = the reviewer fixed some values (the
+    AI's originals are kept under row_json.ai_original); rejected = the page is unreadable / not usable.
+    Every row on the page gets the reviewer's decision (edited rows: corrected; others: approved)."""
+    if body.decision == "corrected" and not (body.corrections or body.corrected_value):
+        raise HTTPException(status_code=400, detail="a correction needs at least one changed value")
+    fixes = {c.extraction_id: _clean(c.values) for c in body.corrections}
+
+    def _run():
+        with get_conn() as conn:
+            item = conn.execute("SELECT id, page_id, extraction_id FROM review_queue WHERE id = %s",
+                                (review_id,)).fetchone()
+            if item is None:
+                return None
+            page_rows = {r["id"]: r["row_json"] or {} for r in conn.execute(
+                "SELECT id, row_json FROM extraction WHERE (page_id = %s OR id = %s) AND schema_name = ANY(%s)",
+                (item["page_id"], item["extraction_id"], list(ROW_SCHEMAS))).fetchall()}
+            if body.corrected_value and item["extraction_id"] and not fixes:
+                fixes[item["extraction_id"]] = _clean(body.corrected_value)
+            unknown = set(fixes) - set(page_rows)
+            if unknown:
+                raise HTTPException(status_code=400, detail=f"rows {sorted(unknown)} are not on this page")
+            for eid, rj in page_rows.items():
+                if body.decision == "rejected":
+                    status = "rejected"
+                elif eid in fixes:
+                    status = "corrected"
+                    original = dict(rj.get("ai_original") or {})
+                    for k in fixes[eid]:
+                        original.setdefault(k, rj.get(k))
+                    conn.execute("UPDATE extraction SET row_json = row_json || %s::jsonb WHERE id = %s",
+                                 (json.dumps({**fixes[eid], "ai_original": original}), eid))
+                    for k, v in fixes[eid].items():     # keep the derived parcel facts in step
+                        if k in FACT_TYPES:
+                            col = "value_num" if isinstance(v, float) else "value_text"
+                            conn.execute(f"UPDATE parcel_fact SET {col} = %s WHERE extraction_id = %s AND fact_type = %s",
+                                         (v, eid, k))
                 else:
-                    conn.execute("UPDATE extraction SET review_status = %s WHERE id = %s",
-                                (review_status, row["extraction_id"]))
+                    status = "approved"
+                conn.execute("UPDATE extraction SET review_status = %s WHERE id = %s", (status, eid))
+            decided = {"decision": body.decision, "rows_on_page": len(page_rows),
+                       "corrections": [{"extraction_id": k, "values": v} for k, v in fixes.items()]}
+            conn.execute("UPDATE review_queue SET status = 'decided', decided_value = %s, decided_by = %s, "
+                         "decided_at = now() WHERE id = %s", (json.dumps(decided), body.decided_by, review_id))
             conn.commit()
-            return row["extraction_id"], review_status
+            return item["extraction_id"], body.decision
 
     result = await asyncio.to_thread(_run)
     if result is None:

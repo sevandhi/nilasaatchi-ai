@@ -18,6 +18,7 @@ const PARK_BBOX = [77.985, 8.79, 78.02, 8.825]; // Allikulam SIPCOT park, approx
  */
 export function MapView({ layers, colorBy, onParcelClick, selectedParcelUid, season, height = "32rem" }) {
   const containerRef = useRef(null);
+  const loadedSeasonRef = useRef(null);   // season whose data the parcel layer currently holds
   const mapRef = useRef(null);
   const hoverPopupRef = useRef(null);
   const [status, setStatus] = useState("loading");
@@ -64,6 +65,7 @@ export function MapView({ layers, colorBy, onParcelClick, selectedParcelUid, sea
         setStatus("error");
         return;
       }
+      if (season) loadedSeasonRef.current = season;
       applyColorBy(map, layers, dataRef.current, colorBy, setLegend);
       setStatus("ok");
     });
@@ -90,7 +92,7 @@ export function MapView({ layers, colorBy, onParcelClick, selectedParcelUid, sea
         hoverPopupRef.current
           .setLngLat(e.lngLat)
           .setHTML(
-            `<div class="text-xs"><b>${p.parcel_uid ?? "—"}</b><br/>village: ${village || "—"}<br/>area: ${p.area_ha_gis ?? "—"} ha<br/>stage: ${p.current_stage ?? "—"}<br/>findings: ${p.n_findings ?? "—"}${p.season_state ? `<br/>season state: ${p.season_state}` : ""}</div>`
+            `<div class="text-xs"><b>${p.parcel_uid ?? "—"}</b><br/>village: ${village || "—"}<br/>area: ${p.area_ha_gis ?? "—"} ha<br/>stage: ${p.current_stage ?? "—"}<br/>findings: ${p.n_findings ?? "—"}${p.season_state ? `<br/>season state: ${p.season_state}` : ""}${p.stage_at_season ? `<br/>stage that season: ${p.stage_at_season}` : ""}</div>`
           )
           .addTo(map);
       } else {
@@ -106,33 +108,37 @@ export function MapView({ layers, colorBy, onParcelClick, selectedParcelUid, sea
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layers.map((l) => l.id + (l.ref_layer || "")).join(",")]);
 
-  // re-apply colour-by when it changes without a full remount
+  // Seasonal colourings (land use, stage by season) need the parcel layer re-fetched with ?season=…
+  // (app/api/layers.py). Fetch first, then colour, so the legend never shows "not available" while
+  // the season's data is on its way. Non-seasonal colourings just repaint the data already loaded.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || status !== "ok") return;
-    applyColorBy(map, layers, dataRef.current, colorBy, setLegend);
-  }, [colorBy, status]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // season slider changes the *data* (not just the paint) for the parcel layer, via
-  // ?season=YYYY-<rabi|kharif|summer> (app/api/layers.py PARCEL_ENRICH_COLUMNS).
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || status !== "ok" || !season) return;
+    const parcelLayers = layers.filter((l) => l.kind === "parcels");
+    const hasProp = parcelLayers.every((l) => propertyAvailable(dataRef.current[l.id]?.features || [], colorBy?.property));
+    if (!colorBy?.seasonal || !season || (loadedSeasonRef.current === season && hasProp)) {
+      applyColorBy(map, layers, dataRef.current, colorBy, setLegend);
+      return;
+    }
     let cancelled = false;
+    setLegend({ title: colorBy.label, items: [], note: `Loading ${season}…` });
     (async () => {
-      for (const layer of layers.filter((l) => l.kind === "parcels")) {
+      for (const layer of parcelLayers) {
         const res = await apiFetch(`/layers/${layer.ref_layer}.geojson`, { params: { season } });
         if (cancelled || !res.ok) continue;
         dataRef.current[layer.id] = res.data;
         map.getSource(`src-${layer.id}`)?.setData(res.data);
       }
-      if (!cancelled) applyColorBy(map, layers, dataRef.current, colorBy, setLegend);
+      if (!cancelled) {
+        loadedSeasonRef.current = season;
+        applyColorBy(map, layers, dataRef.current, colorBy, setLegend);
+      }
     })();
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [season, status]);
+  }, [colorBy, season, status]);
 
   // highlight selection
   useEffect(() => {

@@ -103,3 +103,33 @@ async def get_evidence_pack(finding_id: int, render_chips: bool = False) -> Evid
     except KeyError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
     return EvidencePackResponse(finding_id=finding_id, pack=pack)
+
+
+@router.get("/findings/facets")
+async def finding_facets() -> dict:
+    """Values present in the data for each Findings filter (with counts), for the filter dropdowns."""
+    def _run():
+        with get_conn() as conn:
+            out = {}
+            for key, col in (("category", "category"), ("severity", "severity"), ("village", "village"),
+                             ("block", "block_id"), ("level", "evidence_level")):
+                rows = conn.execute(f"SELECT {col} AS v, count(*) AS n FROM finding WHERE status = 'open' "
+                                    f"AND {col} IS NOT NULL GROUP BY 1 ORDER BY 2 DESC, 1").fetchall()
+                out[key] = [{"value": r["v"], "count": r["n"]} for r in rows]
+            return out
+    return await asyncio.to_thread(_run)
+
+
+@router.get("/findings/{finding_id}/plain-summary")
+async def finding_plain_summary(finding_id: int, lang: str = Query("en", pattern="^(en|ta)$")) -> dict:
+    """The finding explained in everyday words (AI via the router, cached; template fallback)."""
+    def _run():
+        from app.api.plain_summary import plain_summary
+        from pipeline.findings.evidence_pack import evidence_pack
+
+        return plain_summary(evidence_pack(finding_id, render_chips=False), lang)
+
+    try:
+        return await asyncio.to_thread(_run)
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e

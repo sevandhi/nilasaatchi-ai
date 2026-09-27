@@ -142,7 +142,7 @@ verify-ledger:   ## P4: verify the SHA-256 hash-chained agent ledger (RUN=<run_i
 	$(UV) python -m app.ledger verify $(if $(RUN),--run $(RUN))
 
 # --- stubs, filled in by later phases ---
-ocr extract resolve load eval eval-match eval-live demo:
+ocr extract resolve load eval eval-match eval-live:
 	@echo "$@: not implemented yet (see plan.md phases)"; exit 1
 
 

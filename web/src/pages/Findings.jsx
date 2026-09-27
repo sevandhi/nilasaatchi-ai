@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useApi } from "../hooks/useApi.js";
 import { Widget } from "../components/common/Widget.jsx";
@@ -33,6 +33,19 @@ export function Findings() {
   );
   const summary = useApi("/findings/summary");
   const idleLand = useApi("/idle-land");
+  const facets = useApi("/findings/facets");
+  const evidenceRef = useRef(null);
+
+  // the evidence pack opens at the top of the page: bring it into view whenever a finding is opened
+  useEffect(() => {
+    if (evidenceId) evidenceRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [evidenceId]);
+
+  function closeEvidence() {
+    selectFinding(null);
+    setParams({});
+    setOpenExtractionId(null);
+  }
 
   const rows = list.data?.items || [];
 
@@ -63,12 +76,28 @@ export function Findings() {
     <div className="space-y-4">
       <h1 className="text-lg font-semibold text-gray-900">Findings{list.data ? ` (${list.data.total} open)` : ""}</h1>
 
+      {evidenceId && (
+        <section ref={evidenceRef} className="scroll-mt-4">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-gray-600">Evidence pack · finding {evidenceId}</h2>
+            <button onClick={closeEvidence} className="rounded border border-gray-300 px-2 py-0.5 text-xs text-gray-600">Close</button>
+          </div>
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+            <EvidencePackPanel findingId={evidenceId} onOpenExtraction={setOpenExtractionId} />
+            {openExtractionId && <EvidenceViewer extractionId={openExtractionId} />}
+          </div>
+        </section>
+      )}
+
       <div className="flex flex-wrap gap-2 text-xs">
-        <Filter label="category" value={filters.category} onChange={(v) => setFilter("category", v)} />
-        <Filter label="severity" value={filters.severity} onChange={(v) => setFilter("severity", v)} />
-        <Filter label="village" value={filters.village} onChange={(v) => setFilter("village", v)} />
-        <Filter label="block (id)" value={filters.block} onChange={(v) => setFilter("block", v)} />
-        <Filter label="level (parcel/block/fmb)" value={filters.level} onChange={(v) => setFilter("level", v)} />
+        <Filter label="Category" options={facets.data?.category} labels={CATEGORY_LABELS} value={filters.category} onChange={(v) => setFilter("category", v)} />
+        <Filter label="Severity" options={facets.data?.severity} value={filters.severity} onChange={(v) => setFilter("severity", v)} />
+        <Filter label="Village" options={facets.data?.village} value={filters.village} onChange={(v) => setFilter("village", v)} />
+        <Filter label="Block" options={facets.data?.block} value={filters.block} onChange={(v) => setFilter("block", v)} />
+        <Filter label="Evidence level" options={facets.data?.level} value={filters.level} onChange={(v) => setFilter("level", v)} />
+        {(filters.category || filters.severity || filters.village || filters.block || filters.level) && (
+          <button onClick={() => ["category", "severity", "village", "block", "level"].forEach((k) => setFilter(k, null))} className="rounded border border-gray-300 px-2 py-0.5 text-gray-600">Clear filters</button>
+        )}
       </div>
 
       <section>
@@ -108,23 +137,27 @@ export function Findings() {
         </Widget>
       </section>
 
-      <section>
-        <h2 className="mb-2 text-sm font-semibold text-gray-600">Evidence pack</h2>
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-          <EvidencePackPanel findingId={evidenceId} onOpenExtraction={setOpenExtractionId} />
-          {openExtractionId && <EvidenceViewer extractionId={openExtractionId} />}
-        </div>
-      </section>
-      <p className="text-xs text-gray-400">Numbers are as measured now (`GET /findings`, `/findings/summary`) — not the fixed 1,388 in the ui-spec draft, which may drift as the pipeline reruns.</p>
+
     </div>
   );
 }
 
-function Filter({ label, value, onChange }) {
+const CATEGORY_LABELS = {
+  EXTENT_MISMATCH: "Extent mismatch", PV3_POST_POSSESSION_ACTIVITY: "Change after possession", FMB_QUALITY: "Map quality (FMB)",
+  COMPENSATION_MISMATCH: "Compensation mismatch", PV4_IDLE_LAND_BANK: "Idle land", EXTRACTION_ERROR: "Extraction error",
+  PV1_CLASSIFICATION_CONFLICT: "Land-class conflict", DOC_VERSION_CONFLICT: "Proposal vs sanction",
+};
+
+function Filter({ label, options, labels = {}, value, onChange }) {
   return (
     <label className="flex items-center gap-1 text-gray-500">
       {label}:
-      <input value={value || ""} onChange={(e) => onChange(e.target.value || null)} className="w-24 rounded border border-gray-300 px-1 py-0.5" />
+      <select value={value ?? ""} onChange={(e) => onChange(e.target.value || null)} className="max-w-[14rem] rounded border border-gray-300 px-1 py-0.5 text-gray-800" data-testid={`filter-${label.toLowerCase().replace(/\s+/g, "-")}`}>
+        <option value="">All</option>
+        {(options || []).map((o) => (
+          <option key={o.value} value={o.value}>{labels[o.value] || o.value} ({o.count})</option>
+        ))}
+      </select>
     </label>
   );
 }

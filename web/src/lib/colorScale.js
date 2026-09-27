@@ -23,6 +23,9 @@ export function propertyAvailable(features, property) {
 }
 
 /** Builds a MapLibre `fill-color` expression + legend items for a categorical property. */
+const NEUTRAL_VALUES = { NOT_STARTED: "#d1d5db", "No documents linked": "#d1d5db", "No possession evidence": "#d1d5db",
+  "No significant change": "#9ca3af" };
+
 export function categoricalStyle(features, property, order) {
   const values = new Set();
   for (const f of features) {
@@ -30,7 +33,11 @@ export function categoricalStyle(features, property, order) {
     if (v !== null && v !== undefined) values.add(v);
   }
   const ordered = order ? order.filter((v) => values.has(v)).concat([...values].filter((v) => !order.includes(v))) : [...values];
-  const legend = ordered.map((v, i) => ({ value: v, label: String(v), color: CATEGORICAL_10[i % CATEGORICAL_10.length] }));
+  // stable colours: a value keeps its colour however many other values are on screen (e.g. while the
+  // season slider moves); "nothing yet / no data" values are grey
+  const slot = (v, i) => (order && order.includes(v) ? order.indexOf(v) : (order ? order.length : 0) + i);
+  const legend = ordered.map((v, i) => ({ value: v, label: String(v),
+    color: NEUTRAL_VALUES[v] || CATEGORICAL_10[slot(v, i) % CATEGORICAL_10.length] }));
   const expr = ["match", ["get", property]];
   legend.forEach((l) => expr.push(l.value, l.color));
   expr.push("#cccccc");

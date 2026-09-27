@@ -55,6 +55,7 @@ def main() -> int:
     ap.add_argument("--only", default="")
     ap.add_argument("--chaos", default="", help="e.g. gemini:down (sets ROUTER_CHAOS)")
     ap.add_argument("--out", default=str(ROOT / "data" / "eval" / "agent_run.json"))
+    ap.add_argument("--queries", default=str(ROOT / "eval" / "queries.yaml"), help="yaml with an agent_eval list")
     a = ap.parse_args()
     from dotenv import load_dotenv
     load_dotenv(ROOT / ".env")
@@ -63,7 +64,7 @@ def main() -> int:
     os.environ.setdefault("AGENT_CHECKPOINTER", "memory")
     if a.chaos:
         os.environ["ROUTER_CHAOS"] = a.chaos
-    qs = yaml.safe_load((ROOT / "eval" / "queries.yaml").read_text(encoding="utf-8"))["agent_eval"]
+    qs = yaml.safe_load(Path(a.queries).read_text(encoding="utf-8"))["agent_eval"]
     if a.only:
         qs = [q for q in qs if q["id"] in a.only.split(",")]
     rows = []

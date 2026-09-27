@@ -36,6 +36,23 @@ def _aliases():
     return load_aliases(), fold
 
 
+# domain vocabulary -> finding categories / PV3 signal / severity (filters for findings_query)
+CATEGORY_WORDS = [
+    (r"compensat|இழப்பீ", "COMPENSATION_MISMATCH"),
+    (r"extent|area mismatch|விஸ்தீரண", "EXTENT_MISMATCH"),
+    (r"land class|classification conflict|dry land|irrigat", "PV1_CLASSIFICATION_CONFLICT"),
+    (r"vigou?r|post[- ]possession|after possession|still farm|still cultivat|farmland[- ]like|look like farmland|plough", "PV3_POST_POSSESSION_ACTIVITY"),
+    (r"\bidle\b|unused|land bank", "PV4_IDLE_LAND_BANK"),
+    (r"proposal|sanction|version conflict|document drift", "DOC_VERSION_CONFLICT"),
+    (r"overlap|map quality|fmb quality|outside (?:their|the) survey|sliver", "FMB_QUALITY"),
+    (r"extraction error|misread|ocr error", "EXTRACTION_ERROR"),
+]
+SIGNAL_WORDS = [(r"vigou?r|lost vegetation|greenness drop", "vigour_drop"),
+                (r"still farm|still cultivat|farmland[- ]like|look like farmland|plough", "still_farmed_lead")]
+SEVERITY_WORDS = [(r"\bhigh[- ]severity\b|\bhigh\b|\bsevere\b|\bserious\b", "high"),
+                  (r"\bmedium\b", "medium"), (r"\blow[- ]severity\b", "low")]
+
+
 def extract_slots(request: str, attachments: list[Attachment]) -> SlotResult:
     al, fold = _aliases()
     freq = fold(request)
@@ -53,6 +70,24 @@ def extract_slots(request: str, attachments: list[Attachment]) -> SlotResult:
               thresholds=thresholds(request))
     missing, assumptions = [], []
     kinds = [attachment_kind(a) for a in attachments]
+    cats = [c for pat, c in CATEGORY_WORDS if re.search(pat, low)]
+    if cats:
+        s.extra["categories"] = list(dict.fromkeys(cats))
+    sig = [v for pat, v in SIGNAL_WORDS if re.search(pat, low)]
+    if len(sig) == 1:
+        s.extra["signal"] = sig[0]
+    km = (s.thresholds.get("distance_m") or 0) / 1000
+    if km and "PV4_IDLE_LAND_BANK" in cats:       # idle blocks "within N km of a substation / major road"
+        mm = {}
+        if "substation" in low:
+            mm["min_substation_km"] = km
+        if "road" in low:
+            mm["min_major_road_km"] = km
+        if mm:
+            s.extra["metric_max"] = mm
+    sev = [v for pat, v in SEVERITY_WORDS if re.search(pat, low)]
+    if sev:
+        s.extra["severities"] = list(dict.fromkeys(sev))
     if "pdf" in kinds or "image" in kinds:
         s.extra["documents"] = [a.id for a in attachments if attachment_kind(a) in ("pdf", "image")]
     if s.surveys and not s.villages:

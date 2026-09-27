@@ -159,9 +159,15 @@ class ReviewListResponse(BaseModel):
     total: int
 
 
+class ReviewCorrection(BaseModel):
+    extraction_id: int
+    values: dict[str, Any]
+
+
 class ReviewDecisionRequest(BaseModel):
     decision: Literal["approved", "corrected", "rejected"]
-    corrected_value: dict[str, Any] | None = None
+    corrected_value: dict[str, Any] | None = None   # legacy single-row form (row-level items only)
+    corrections: list[ReviewCorrection] = Field(default_factory=list)  # page-level: per-row value fixes
     decided_by: str | None = None
 
 
