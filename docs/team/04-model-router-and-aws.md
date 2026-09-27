@@ -44,18 +44,19 @@ It probes every model live (one tiny call each) and records status, latency, the
 - The 64-px probe was too small for Ministral, which gave a false failure.
 
 ## 6. AWS (Team 49, FAI-TCE-Builder-AI, Mumbai ap-south-1)
-- **Approved services:** S3, Lambda, API Gateway, DynamoDB, CloudWatch, and Bedrock (Ministral 3B/8B, Titan). Textract is not approved for our category, and doesn't read Tamil anyway. No EC2/RDS.
+- **Approved services:** S3, Lambda, API Gateway, DynamoDB, CloudWatch, and Bedrock (Ministral 3B/8B, Titan; Nova Lite/Micro added on 27 Sep). Textract is not approved for our category, and doesn't read Tamil anyway. No EC2/RDS.
 - **Login:** SSO device code (the user approves in a browser; we never handle passwords). A session lasts **2 hours** (confirmed by FarmwiseAI).
 - **Spend control:** a self-imposed **US$15 cap** of the US$100 budget.
   - `make aws-cost` reads Cost Explorer.
   - The router adds a local estimate, and stops Bedrock at 80%.
-  - **Spend so far: about US$7.9** (mostly Stage B, ~US$0.001/page).
-- **Lambda batch worker** (D-042): to run multi-hour Bedrock jobs without a human login, requests are collected locally, uploaded to private S3, processed by an S3-triggered Lambda, then imported back.
-  - The code is complete and tested (23 tests).
-  - The Lambda role currently **lacks Bedrock permission**; FarmwiseAI is reviewing it.
-  - Until then, bulk jobs run in ≤ 2-hour chunks. The router already supports `ROUTER_BEDROCK_MODE=collect|cache_only`.
+  - **Spend:** the router estimate is ~US$8 (mostly Stage B, ~US$0.001/page); Cost Explorer shows US$0.79 (it lags and rounds). Either way, it is far below the US$100 event budget.
+- **Lambda batch worker** (D-042): built and tested (23 tests), but removed from AWS on 27 Sep because the Lambda role then lacked Bedrock permission. Bulk extraction was finished in ≤ 2-hour login chunks instead.
+- **Bedrock from Lambda now works:** FarmwiseAI enabled it on 27 Sep; our cloud demo's `/health/bedrock` check calls Ministral 3B from Lambda (167 ms).
+- **Read-only cloud demo (live):** API Gateway `lv7b9630q6` → Lambda `fai-tce-team49-api` (FastAPI + DuckDB) → private S3 `fai-tce-team49-data` (snapshot + page images). https://lv7b9630q6.execute-api.ap-south-1.amazonaws.com/ . Details are in chapter 13 and `infra/RESOURCES.md`; teardown with `make cloud-down`.
+- **Why not the full app in AWS?** It needs PostGIS (no RDS/EC2 allowed) and the Tesseract OCR container (no ECR). So uploads and the live agent run locally, and the cloud serves everything read-only.
 
 ## 7. Likely review questions
 - *"Isn't Ministral open-weight, not proprietary?"* Yes. Our proprietary models are Gemini and Cohere (plus Titan embeddings); Ministral is our main open-weight model, with Qwen and gpt-oss as fallbacks.
 - *"How do you know every model has a real role?"* The router log shows which task each model served. The roles differ: planning/judging, critique, table reading, SQL, classification and satellite teaching.
 - *"What if Gemini is down?"* The chain falls back (Groq/Cohere), and the chaos hook (`ROUTER_CHAOS=gemini:down`) demonstrates it.
+- *"Did owner data ever reach Gemini or Cohere?"* No. The router log shows 0 of 14,202 PII-tier calls went to a model that trains on inputs; they went to Bedrock and Groq.

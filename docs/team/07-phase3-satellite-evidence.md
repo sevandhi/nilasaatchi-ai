@@ -10,7 +10,7 @@
 - **Cleaning:** clouds, shadows and cirrus are removed with the scene-classification (SCL) band.
 
 ## 2. Per-parcel indices (`make s2-extract`)
-For each parcel and each usable scene (**381,294 observations** = 307 scenes × 1,242 parcels):
+For each parcel and each usable scene (**381,294 observations** = 307 scenes × 1,242 parcels; **382,536** after the incremental refresh added the 2026-09-26 scene, see chapter 13):
 
 | Index | Formula | Meaning |
 |---|---|---|

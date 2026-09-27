@@ -40,9 +40,9 @@ No product we found checks acquisition **documents** against the **satellite rec
 
 | Pillar | What it does | Status |
 |---|---|---|
-| **Paper** | Reads documents, extracts claims with evidence (page and box), links them to FMB parcels, builds each parcel's legal-stage timeline | P1/P2 |
-| **Planet** | A per-parcel Sentinel-2 time series from 2019 to now, seasonal features, a land-use model, and a **control-group comparison** | P3 ✅ |
-| **Proof** | An agent that plans, routes, verifies and presents findings with evidence packs | P4/P5 (partial) |
+| **Paper** | Reads documents, extracts claims with evidence (page and box), links them to FMB parcels, builds each parcel's legal-stage timeline; new documents can be uploaded | ✅ |
+| **Planet** | A per-parcel Sentinel-2 time series from 2019 to now, seasonal features, a land-use model, and a **control-group comparison**; refreshes with new scenes | ✅ |
+| **Proof** | 1,388 findings with evidence packs, and an agent that plans, routes, verifies (cross-vendor critic) and presents answers | ✅ |
 
 **The reuse story:** the same engine answers "was a crop grown on this plot this season?", the core question behind FarmwiseAI's crop-insurance and loan checks (the agri-claims domain pack).
 

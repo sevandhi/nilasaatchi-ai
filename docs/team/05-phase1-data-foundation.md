@@ -53,4 +53,4 @@ Stored in `parcel.raster_stats` for all 1,242 parcels.
   - FMB totals within 0.5% ✅
   - rasters for all parcels ✅
   - classifier ≥ 90% stage accuracy ✅ (v2)
-- **Remaining:** the classifier's full run over all 2,362 documents (running as of this writing).
+- **Done:** the classifier's full run over all 2,362 documents (stage 0.90 / type 0.80 / scheme 0.96 on 100 labels).

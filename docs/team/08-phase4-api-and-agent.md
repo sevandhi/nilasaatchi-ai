@@ -1,7 +1,7 @@
 # 08 · Phase 4: API and Agent
 
 ## 1. The API (✅ done): `app/api/`
-A FastAPI service the future React workspace will call. Start it with `make api` (port 8000).
+The FastAPI service behind the React workspace. `make demo` starts it (port 8000; interactive docs at `/docs`).
 
 | Endpoint | Purpose |
 |---|---|
@@ -12,6 +12,11 @@ A FastAPI service the future React workspace will call. Start it with `make api`
 | `GET /layers/{name}.geojson` | Map layers (parcels, FMB quality, roads, water…) |
 | `GET /chips/{parcel_uid}/{date}.png` | Satellite image chips |
 | `GET /review-queue`, `POST /review/{id}` | Human review of uncertain extractions |
+| `GET /stats/overview`, `/parcels/{uid}` (+ `/timeline`, `/extractions`, `/satellite`, `/findings`) | Overview counts; everything about one parcel |
+| `GET /findings`, `/findings/summary`, `/findings/{id}/evidence-pack`, `/idle-land` | Findings with filters, evidence packs, idle land bank |
+| `GET /router/models`, `/router/usage`, `/router/chains`; `POST /ledger/verify` | Model registry, usage/cost, chains; verify the hash chain |
+| `POST /ingest/documents`, `GET /ingest/jobs/{id}`, `GET /ingest/jobs/{id}/report?fmt=pdf\|csv` | Upload a document, watch its 7 steps, download the verification report (chapter 13) |
+| `POST /ingest/satellite-refresh`, `GET /ingest/satellite/status` | Fetch new Sentinel-2 scenes; data freshness |
 | `GET /examples`, `GET /health` | Example queries; health check |
 
 **Built-in safety:**
@@ -19,9 +24,9 @@ A FastAPI service the future React workspace will call. Start it with `make api`
 - bank-account-like fields are always stripped;
 - the database role for agent queries is read-only.
 
-**Verified live:** health OK, 1,242 parcel features served, documents listed.
+**Verified:** 928 backend tests and 14 Playwright UI tests; every UI page runs on this API.
 
-## 2. The agent (🟡 partially built): `app/agent/`
+## 2. The agent (✅ built and evaluated): `app/agent/`
 **Design** (from `plan.md` §5.4; the contract is in `app/agent/CONTRACT.md`):
 ```
 intake → planner → router → tools (parallel) → verifier → critic → judge → presenter
@@ -36,7 +41,7 @@ intake → planner → router → tools (parallel) → verifier → critic → j
 - **Critic:** a model from a **different vendor** than the one that produced the claim. It must propose a *testable* reason the claim is wrong, and the system runs that test.
 - **Judge:** accept / downgrade / reroute / send to review, with calibrated confidence.
 - **Ledger:** every step is appended to a SHA-256 hash chain (`agent_ledger`); tampering with a row breaks the chain.
-- **Domain packs:** `land_acquisition` and `agri_claims` (crop presence on any uploaded farm plot). The graph stays the same; only tools and prompts change, which is the reusability proof.
+- **Domain packs:** `land_acquisition` (built and evaluated) and `agri_claims` (crop presence on a farm plot: scaffolded in `app/domains/`; uploading your own plots is **not** in this build). The graph stays the same and only tools and prompts change, which is the reusability argument.
 
 **Status (27 Sep): ✅ working end-to-end on the real data.**
 - **Tools on the real knowledge graph:** `sql_query` (guarded), `spatial_query` (within X km of roads/substations), `findings_query`, `evidence_pack`, `parcel_timeline`, `satellite_summary`.

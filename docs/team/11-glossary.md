@@ -43,3 +43,19 @@
 | **Evidence pack** | Document crop + satellite chips + checks + verdict for one finding (planned P5) |
 | **SSE** | Server-sent events: the live progress stream from API to UI |
 | **Ledger (hash chain)** | Tamper-evident log of every agent step |
+
+## Added in Phases 5–7
+| Term | Meaning |
+|---|---|
+| Finding | An evidence-backed issue the system detected (e.g. compensation mismatch); a signal for verification, not a legal conclusion |
+| Evidence pack | The proof behind a finding: document page and values (paper) + satellite numbers and chips (planet) + checks, verdict, confidence, caveats |
+| Idle land bank | Possessed land showing no clearing or construction, grouped by block |
+| Verification report | The downloadable PDF/CSV produced for each uploaded document |
+| Declared document type | The type the uploader chooses on the upload form; overrides the AI's guess, which stays visible |
+| Satellite refresh | Fetching Sentinel-2 scenes newer than the latest and updating only the affected parcels |
+| Snapshot | The pre-computed read-only API answers stored in S3 for the cloud demo |
+| Lambda / API Gateway | AWS serverless function (runs our code on demand) / the public HTTPS front door that calls it |
+| Presigned URL | A short-lived link that lets a browser fetch one private S3 file without making the bucket public |
+| Throttling | AWS limiting how many Lambda runs happen at once (~10 in our account); the app retries |
+| Read-only mode | The cloud build of the UI: browsing only; uploads, the live agent and review actions are in the full app |
+

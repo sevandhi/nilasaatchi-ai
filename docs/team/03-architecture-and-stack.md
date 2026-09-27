@@ -1,6 +1,7 @@
 # 03 · Architecture and Tech Stack
 
 ## 1. The big picture
+> The **as-built** diagrams (including uploads and the AWS cloud demo) are in [`docs/architecture.md`](../architecture.md). The picture below is the core data flow.
 ```mermaid
 flowchart LR
   subgraph Sources
@@ -41,8 +42,8 @@ flowchart LR
 | Agent | LangGraph + Pydantic | Explicit state graph, typed state, checkpointing |
 | Model access | Own router on top of LiteLLM / boto3 / Cohere v2 | Privacy tiers, quotas, fallback, spend guard, logging |
 | API | FastAPI + server-sent events (SSE) | Streams live agent progress to the UI |
-| Frontend (planned) | React + JavaScript (JSX), MapLibre, ECharts | Team choice (D-011); free basemap |
-| Cloud | AWS ap-south-1 (Team 49): Bedrock, S3, Lambda, DynamoDB | FarmwiseAI's approved services; no EC2/RDS allowed |
+| Frontend | React 19 + Vite, JavaScript (JSX), MapLibre, ECharts, TanStack Table, Zustand, Tailwind | Team choice (D-011); free basemap; 8 pages; a read-only build for the cloud |
+| Cloud | AWS ap-south-1 (Team 49): Bedrock (table reading), and a read-only demo on Lambda + API Gateway + private S3 (DuckDB over Parquet) | FarmwiseAI's approved services; no EC2/RDS allowed |
 
 ## 3. Repository map (what lives where)
 ```
@@ -53,13 +54,19 @@ pipeline/catalog|classify|gis|raster       Phase 1
 pipeline/extract|normalize|load            Phase 2
 planet/stac|extract|features|classify|controls|events|chips   Phase 3
 app/router/                                model router (Phase 0/4)
-app/api/  app/workspace/  app/export/      FastAPI service (Phase 4)
-app/agent/  app/tools/  app/ledger/        agent graph + tools (Phase 4, partial)
-infra/bedrock_batch/                       Lambda batch worker (built, waiting on AWS permission)
-spikes/                                    feasibility experiments (OCR bake-off, S2 spike)
+app/api/  app/workspace/  app/export/      FastAPI service (Phase 4) + PDF/CSV export
+app/agent/  app/tools/  app/ledger/        agent graph + tools + hash-chained ledger (Phase 4)
+pipeline/match|findings  db/views/         matcher, lifecycle views, findings engine (Phase 5)
+web/                                       React UI (Phase 6)
+app/ingest/  planet/refresh.py             upload pipeline + report; incremental satellite refresh
+app/cloud/  infra/cloud_demo/              read-only cloud demo (Lambda) + deploy/teardown
+scripts/demo_*.sh|.ps1, *-WINDOWS.cmd      run on a new machine (Linux/macOS/Windows)
+infra/bedrock_batch/                       Lambda batch worker (removed from AWS; kept for reference)
+spikes/ocr_bakeoff/                        OCR bake-off (its Tesseract wrapper is still used)
+ref/                                       material not used by the running app (old spikes, drafts)
 eval/                                      golden, held-out, dev, dev2, classify labels, planet audit
 docs/                                      decisions, metrics, progress, spikes, reviews, team/
-tests/                                     ~750 automated tests
+tests/                                     ~930 automated tests (+ web/e2e Playwright)
 data/                                      (git-ignored) caches, page images, rasters, results
 ```
 
@@ -71,7 +78,9 @@ data/                                      (git-ignored) caches, page images, ra
 | `document`, `page`, `document_segment` | Catalog + classification (form, stage, page sections) |
 | `extraction`, `parcel_fact`, `acquisition_event`, `owner`, `review_queue` | Extracted facts with evidence; owner names hidden from the agent via `v_owner_pseudo` |
 | `s2_scene`, `parcel_obs`, `parcel_season`, `planet_teacher_label`, `parcel_event_window`, `parcel_did` | Satellite pipeline outputs |
+| `finding` (+ views `v_parcel_lifecycle`, `v_parcel_events`, `v_idle_land_bank`) | Findings with evidence packs; each parcel's legal stage |
 | `workspace`, `workspace_version`, `run`, `run_event`, `agent_ledger` | API/agent state and the tamper-evident ledger |
+| `ingest_job` | Upload and satellite-refresh jobs with per-step status |
 
 The agent queries through a read-only role **`agent_ro`**, which cannot see owner names or write anything.
 
@@ -79,4 +88,4 @@ The agent queries through a read-only role **`agent_ro`**, which cannot see owne
 - **Idempotent `make` targets**: every step can be re-run; results are cached by content hash.
 - **Decision log** (`docs/decisions.md`), **metrics log** (`docs/metrics.md`), **progress board** (`docs/progress.md`).
 - **Quality gates:** a phase closes only when its acceptance commands pass and an independent review passes (Phase 0 review: PASS).
-- **Automated tests:** about 750, running offline with recorded model responses (no quota spent).
+- **Automated tests:** 928 backend tests (offline, recorded model responses) and 14 Playwright UI tests.
