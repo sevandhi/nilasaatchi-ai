@@ -59,3 +59,12 @@
 | Cloud | read-only demo on Lambda + API Gateway | pages load | all 8 pages + page images (presigned) + 405 on writes; 0 browser errors after the throttle retry | https://lv7b9630q6.execute-api.ap-south-1.amazonaws.com/ | ✅ |
 | Cloud | Bedrock from Lambda (FarmwiseAI's new permission) | ok | ok, Ministral 3B, 167 ms | `GET /health/bedrock` | ✅ |
 | Cost | AWS spend | ≤ $15 own cap (US$100 budget) | Cost Explorer $0.79 (lags ~1 day); router estimate ~$8.0 | `make aws-cost` | ✅ |
+
+### Added 2026-09-28: findings audit + route comparison (lead)
+| Area | Metric | Target | Measured | Command / source | Result |
+|---|---|---|---|---|---|
+| Proof | Findings re-computed from source tables (stratified random sample, seed 7, 5 per category, 8 categories) | ≥ 80% | **37/37 (100%)**: each claim follows from its stored evidence | `uv run python scripts/audit_findings.py` → data/eval/p7_findings_audit.json | ✅ |
+| Proof | Paper check: scanned source viewed for the 10 paper-based findings in that sample | ≥ 80% | **6/10**: extent mismatch 5/5; compensation mismatch **1/5** (false positives: merged cell, missed tree column, table with a different rate/unit, ₹3,000 rounding) | same JSON, `paper_check` | ❌ for compensation |
+| Proof | Demo finding 1977 (Melathattaparai 227) on paper | real | real: 2.125 ac paid ₹2,29,208 where every other row pays ₹5 lakh/ac | page crop | ✅ |
+| Routing | 8 agent queries × 3 policies (AGENT_EXCLUDE_MODELS switch) | reported | routed: plans 8/8, answers 3/8, verified 84.9%, 26 critic challenges, p50 41 s, shadow $0.147 · all-open: plans 0/8 (→ default plan), answers 5/8, verified 0%, 0 critic, p50 86 s, $0.001 · all-proprietary: plans 6/8, answers 4/8, verified 90%, 24 critic, p50 55 s, $0.173; actual cost $0 in all | `make eval-routes` → data/eval/routes_*.json | reported |
+| Agent | answers matching SQL, routed, re-run today | ≥ 85% | **3/8** today vs 8/8 on 27 Sep: today's planner (Gemini flash-lite) left optional filters empty (e.g. findings_query with no category); slot filling covers only required args | same | ❌ (variability) |

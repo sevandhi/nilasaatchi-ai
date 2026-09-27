@@ -183,3 +183,7 @@ cloud-down:      ## D-067: tear down the cloud demo (asks for confirmation)
 	bash infra/cloud_demo/teardown.sh
 
 .PHONY: cloud-export cloud-package cloud-deploy cloud-down demo demo-setup package
+
+eval-routes:     ## P7 T6.2: 8 agent queries under routed / all-open / all-proprietary (live free tiers)
+	bash scripts/eval_routes.sh
+.PHONY: eval-routes

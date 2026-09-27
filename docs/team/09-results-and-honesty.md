@@ -19,6 +19,8 @@ All numbers are measured. The source is `docs/metrics.md` (each with the command
 | **Agent** | 8/8 answers match SQL references (4 demo + 4 unseen incl. Tamil); plan validity 100%; tool success 88%; verified-claim rate 78.5%; the critic is always another vendor |
 | **New documents** | 20/20 unseen uploads completed, **387 parcel links, 806 facts**; the AI type guess was right on 11/20 (hence the declared type) |
 | **Privacy** | **0 of 14,202** owner-data (PII) model calls went to a model that trains on inputs |
+| **Findings audit** | 37/37 claims follow from their evidence (recomputed, all 8 categories); on the scanned page, extent mismatches 5/5 but compensation mismatches only **1/5** (merged cells, missed tree columns) |
+| **Routing comparison** | routed: 8/8 valid plans, 84.9% verified, 26 critic checks, 41 s; all-open: 0/8 plans, no verification, 86 s; all-proprietary: 6/8, 90%, 55 s; routed is 15% cheaper at list price |
 | Safety | The SQL guard refuses DROP / DELETE / stacked statements / owner reads; the agent's DB role can't read owners |
 | Tests | **928** backend tests, 13 UI e2e (+1 skipped when no second AI quota) |
 | Cloud | Read-only demo on Lambda + API Gateway; Bedrock from Lambda verified (167 ms) |
@@ -41,6 +43,8 @@ Reviewers respect this. Each correction came from checking our own work:
 | 10 | "Every check passed, so the rows are right" | A fresh read put the row serial numbers (1, 2, 3…) into the survey column and passed every check | New `survey_not_serial` check → second read / review (D-065) |
 | 11 | "The AI classifies uploaded documents" | Without folder names it was wrong on 4/7, then 9/20 | Uploader can declare the type; the AI guess stays visible (D-065, D-066) |
 | 12 | An owner-name leak (`owner_vlm_raw`) in stored rows | Raw owner text survived in 4,153 rows | Scrubbed and loader patched (D-054) |
+| 13 | "Agent answers 8/8" | A re-run on 28 Sep matched 3/8: the free planner left optional filters empty | Both numbers reported; fix = fill optional filters from the question (D-071) |
+| 14 | "Findings are 100% supported" (recomputed) | On the scanned pages, 4 of 5 compensation findings were false positives | Compensation findings presented as leads (D-071) |
 
 ## 3. Known limitations (say them before reviewers do)
 - **Extraction below targets on fresh pages:** survey 89.5, extent 79.2, owner 83.3, headers 91.1% (targets 92/90/85/95); uncertain rows go to review (D-055).
@@ -49,4 +53,5 @@ Reviewers respect this. Each correction came from checking our own work:
 - **Crop vs weed:** greenness alone can't separate them, hence the control group. Ploughing at 10 m is rarely detectable.
 - **Agent speed:** ~50 s median per question (target 25 s); free-tier daily quotas can run out.
 - **Cloud demo is read-only:** uploads and the live agent need the local app (no RDS/EC2/ECR allowed).
-- **Not measured:** the findings-precision audit and the routing-policy comparison.
+- **Compensation findings** are leads: on the scanned pages only 1/5 was confirmed (merged cells, missed tree columns). Extent findings were 5/5.
+- **Agent answer accuracy varies** between runs of the free planner model (8/8 → 3/8).

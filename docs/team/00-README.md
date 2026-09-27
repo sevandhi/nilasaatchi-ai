@@ -21,6 +21,7 @@ This folder explains **everything we built**: what it does, why it was built tha
 | 11 | [Glossary](11-glossary.md) | Terms (Tamil, legal, GIS, AI) | Reference |
 | 12 | [How to run and demo](12-how-to-run.md) | Run on any laptop (Linux/macOS/Windows), the cloud link, what to show | Preethi |
 | 13 | [Phases 5–7 as built](13-phases5-7-as-built.md) | Findings engine, the UI, uploads + report, satellite refresh, cloud demo, packaging, GitHub | Everyone |
+| — | [Reviewer scorecard](../reviewer-scorecard.md) | The key numbers on one page: scale, cost, accuracy, routing comparison, safety, unique points | Everyone (memorise §1–4) |
 | — | [As-built architecture](../architecture.md) | Diagrams of what runs today (local + AWS), components, model routing | Shivani, Preethi |
 
 ## Who owns what (from the proposal)

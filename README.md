@@ -39,7 +39,7 @@ The FarmwiseAI dataset (`Dataset/`, `Documents/`) and derived data (`data/`) are
 
 ## Documentation
 - `plan.md` (architecture and phases), `proposal.md` (business case), `docs/decisions.md` (decision log), `docs/metrics.md` (measured results)
-- `docs/demo-script.md` (8-min demo), `DEMO.md` (run on a new machine), `docs/ui/` (user guide, testing guide, demo test data, report guide), `docs/team/` (team handbook)
+- **`docs/reviewer-scorecard.md` (key numbers at a glance)**, `docs/architecture.md` (as built), `docs/demo-script.md` (8-min demo), `DEMO.md` (run on a new machine), `docs/ui/` (user guide, testing guide, demo test data, report guide), `docs/team/` (team handbook)
 
 ## Honest limits
 - Table extraction accuracy on unseen pages: survey number 89.5%, owner 83.3%, extent 79.2%. That is below target, so uncertain rows go to review.

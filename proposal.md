@@ -421,4 +421,6 @@ Built and running. Every number was measured (details in docs/metrics.md, decisi
 - **New data:** uploads processed end to end (20/20 unseen documents, 387 parcel links) with a downloadable verification report. An incremental Sentinel-2 refresh added the 2026-09-26 scene.
 - **Privacy:** 0 of 14,202 owner-data (PII) model calls went to a model that trains on inputs.
 - **Cost:** AWS Cost Explorer US$0.79 (router estimate ~US$8) of the US$100 event budget; all other models on free tiers.
-- **Not met / not measured:** planet student macro-F1 0.634 (target 0.80); agent p50 latency ~50 s (target 25 s); findings-precision audit and route comparison not run.
+- **Findings audit:** 37/37 claims follow from their evidence; on the scanned pages extent mismatches were 5/5 and compensation mismatches 1/5 (now presented as leads).
+- **Routing comparison (8 questions):** routed 8/8 valid plans, 84.9% verified, 41 s median; all-open 0/8 plans, no verification, 86 s; all-proprietary 6/8, 90%, 55 s; routed 15% cheaper at list prices.
+- **Not met:** planet student macro-F1 0.634 (target 0.80); agent latency ~41 s (target 25 s); agent answers vs SQL varied 8/8 → 3/8 between runs.
