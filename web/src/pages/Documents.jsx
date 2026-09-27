@@ -1,4 +1,5 @@
 import { RetryImg } from "../components/common/RetryImg.jsx";
+import { FacetSelect } from "../components/common/FacetSelect.jsx";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { DocumentListResponseSchema } from "../api/schemas.js";
@@ -38,6 +39,7 @@ export function Documents() {
     [filters, offset]
   );
 
+  const facets = useApi("/documents/facets");
   const uploads = useApi(READ_ONLY ? null : "/ingest/jobs", { schema: IngestJobListResponseSchema, params: { kind: "document", limit: 20 } });
   const [expandedJobId, setExpandedJobId] = useState(null);
 
@@ -56,6 +58,7 @@ export function Documents() {
             onJobSettled={() => {
               uploads.reload();
               list.reload();
+              facets.reload();       // a new document can add a new village / type / stage to the dropdowns
             }}
           />
 
@@ -101,17 +104,24 @@ export function Documents() {
         </>
       )}
 
-      <div className="flex flex-wrap gap-2 text-xs">
-        {["village", "classified_type", "stage", "q"].map((k) => (
-          <label key={k} className="flex items-center gap-1 text-gray-500">
-            {k}:
-            <input
-              value={filters[k]}
-              onChange={(e) => { setOffset(0); setFilters((f) => ({ ...f, [k]: e.target.value })); }}
-              className="w-32 rounded border border-gray-300 px-1 py-0.5"
-            />
-          </label>
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        {[["village", "Village"], ["classified_type", "Document type"], ["stage", "Legal stage"]].map(([k, label]) => (
+          <FacetSelect key={k} label={label} options={facets.data?.[k]} value={filters[k]}
+            onChange={(v) => { setOffset(0); setFilters((f) => ({ ...f, [k]: v })); }} />
         ))}
+        <label className="flex items-center gap-1 text-gray-500">
+          Search:
+          <input
+            value={filters.q}
+            placeholder="file name, document no. or page text"
+            onChange={(e) => { setOffset(0); setFilters((f) => ({ ...f, q: e.target.value })); }}
+            className="w-44 rounded border border-gray-300 px-1 py-0.5"
+          />
+        </label>
+        {(filters.village || filters.classified_type || filters.stage || filters.q) && (
+          <button onClick={() => { setOffset(0); setFilters({ village: "", classified_type: "", stage: "", q: "" }); }}
+            className="rounded border border-gray-300 px-2 py-0.5 text-gray-600">Clear filters</button>
+        )}
       </div>
 
       

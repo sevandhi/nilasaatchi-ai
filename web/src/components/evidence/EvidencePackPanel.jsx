@@ -31,22 +31,57 @@ function PlainSummary({ findingId }) {
   const lang = useStore((s) => s.lang);
   const { status, data } = useApi(`/findings/${findingId}/plain-summary`, { params: { lang } }, [findingId, lang]);
   if (status === "error" || status === "empty") return null;      // e.g. the read-only cloud demo
+  const list = (v) => (Array.isArray(v) ? v : v ? [v] : []);
   return (
-    <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3" data-testid="plain-summary">
-      <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-emerald-800">In simple words</div>
+    <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4" data-testid="plain-summary">
+      <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-800">In simple words</div>
       {status !== "ok" || !data ? (
-        <p className="text-xs text-gray-500">Writing a simple explanation…</p>
+        <p className="text-sm text-gray-500">Writing a clear explanation of this finding…</p>
       ) : (
-        <div className="space-y-1.5 text-[13px] leading-snug text-gray-800">
-          <p>{data.summary}</p>
-          <p><b>Why it matters:</b> {data.what_it_means}</p>
-          <p><b>How sure are we:</b> {data.how_sure}</p>
-          <p><b>What to check next:</b> {data.what_next}</p>
-          <p className="text-[10px] text-gray-500">
-            {data.source === "template" ? "Standard explanation." : "Written by AI from the evidence below."} The facts and numbers below are the source.
+        <div className="space-y-3 text-[14px] leading-relaxed text-gray-800">
+          {data.headline && <p className="text-base font-semibold text-gray-900">{data.headline}</p>}
+          {data.what_was_found && <Part title="What was found">{data.what_was_found}</Part>}
+          {list(data.numbers_explained).length > 0 && (
+            <Part title="The numbers, explained">
+              <ul className="space-y-1">
+                {list(data.numbers_explained).map((n, i) => (
+                  <li key={i} className="flex gap-2">
+                    <span className="shrink-0 rounded bg-white px-1.5 py-0.5 font-mono text-[12px] font-semibold text-emerald-800 ring-1 ring-emerald-200">{n.number}</span>
+                    <span>{n.meaning}</span>
+                  </li>
+                ))}
+              </ul>
+            </Part>
+          )}
+          {data.why_flagged && <Part title="Why the system flagged it">{data.why_flagged}</Part>}
+          {list(data.other_explanations).length > 0 && (
+            <Part title="It could also be explained by">
+              <ul className="list-disc space-y-0.5 pl-5">{list(data.other_explanations).map((x, i) => <li key={i}>{x}</li>)}</ul>
+            </Part>
+          )}
+          {data.how_sure && <Part title="How sure are we">{data.how_sure}</Part>}
+          {list(data.what_next).length > 0 && (
+            <Part title="What to check next">
+              <ol className="list-decimal space-y-0.5 pl-5">{list(data.what_next).map((x, i) => <li key={i}>{x}</li>)}</ol>
+            </Part>
+          )}
+          {data.bottom_line && (
+            <p className="rounded-lg bg-white px-3 py-2 font-medium text-gray-900 ring-1 ring-emerald-200"><span className="text-emerald-800">Bottom line: </span>{data.bottom_line}</p>
+          )}
+          <p className="text-[11px] text-gray-500">
+            {data.source === "template" ? "Standard explanation." : "Written by AI from the evidence below."} The facts and numbers below are the source; this is a signal to check, not a legal conclusion.
           </p>
         </div>
       )}
+    </div>
+  );
+}
+
+function Part({ title, children }) {
+  return (
+    <div>
+      <div className="mb-0.5 text-[12px] font-semibold uppercase tracking-wide text-gray-500">{title}</div>
+      <div>{children}</div>
     </div>
   );
 }

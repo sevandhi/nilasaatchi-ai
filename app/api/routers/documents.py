@@ -156,3 +156,18 @@ async def get_evidence(extraction_id: int, demo_mask: bool = True) -> EvidenceRe
         extractor=ext["extractor"], privacy_tier=ext["privacy_tier"], confidence=ext["confidence"],
         review_status=ext["review_status"], row=row_json, owners=owner_refs, masked=masked,
     )
+
+
+@router.get("/documents/facets")
+async def document_facets() -> dict:
+    """Values present in the catalogue for each Documents filter (with counts), live from the database, so
+    new documents (uploads) and new types/stages appear in the dropdowns automatically."""
+    def _run():
+        with get_conn() as conn:
+            out = {}
+            for key in ("village", "classified_type", "stage"):
+                rows = conn.execute(f"SELECT {key} AS v, count(*) AS n FROM document WHERE {key} IS NOT NULL "
+                                    f"AND {key} <> '' GROUP BY 1 ORDER BY 2 DESC, 1").fetchall()
+                out[key] = [{"value": r["v"], "count": r["n"]} for r in rows]
+            return out
+    return await asyncio.to_thread(_run)

@@ -1,4 +1,10 @@
 import { useState } from "react";
+import { FacetSelect } from "../components/common/FacetSelect.jsx";
+
+const REASON_LABELS = {
+  self_consistency_fail: "Numbers don't add up", prose_as_table: "Text read as a table", owner_sample: "Owner-name quality sample",
+  handwriting: "Handwritten page", vlm_failed: "Table reader failed", blurred_newsprint: "Blurred newspaper scan",
+};
 import { ReviewListResponseSchema } from "../api/schemas.js";
 import { useApi } from "../hooks/useApi.js";
 import { Widget } from "../components/common/Widget.jsx";
@@ -8,6 +14,7 @@ import { EvidenceViewer } from "../components/evidence/EvidenceViewer.jsx";
 /** Page 9: review queue — uncertain items with a crop, candidate values and the reason. */
 export function ReviewQueue() {
   const [reasonFilter, setReasonFilter] = useState("");
+  const facets = useApi("/review-queue/facets");
   const list = useApi("/review-queue", { schema: ReviewListResponseSchema, params: { status: "open", reason: reasonFilter || undefined, limit: 60 } }, [reasonFilter]);
   const [decided, setDecided] = useState({});
   const [openExtraction, setOpenExtraction] = useState(null);
@@ -16,8 +23,7 @@ export function ReviewQueue() {
     <div className="space-y-4">
       <h1 className="text-lg font-semibold text-gray-900">Review queue{list.data ? ` (${list.data.total} open)` : ""}</h1>
       <label className="text-xs text-gray-500">
-        reason filter:{" "}
-        <input value={reasonFilter} onChange={(e) => setReasonFilter(e.target.value)} placeholder="e.g. prose_as_table" className="rounded border border-gray-300 px-2 py-1" />
+        <FacetSelect label="Reason" options={facets.data?.reason} labels={REASON_LABELS} value={reasonFilter} onChange={setReasonFilter} />
       </label>
 
       {openExtraction && (
@@ -34,7 +40,7 @@ export function ReviewQueue() {
               key={item.id}
               item={item}
               onOpenExtraction={setOpenExtraction}
-              onDecided={(id) => setDecided((d) => ({ ...d, [id]: true }))}
+              onDecided={(id) => { setDecided((d) => ({ ...d, [id]: true })); facets.reload(); }}
             />
           ))}
         </div>

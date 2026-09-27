@@ -180,16 +180,18 @@ Each filter is a dropdown listing the values present in the data, with counts; c
 ## F. Documents
 | Do | Expected |
 |---|---|
-| Filter type `AWARD_7_2` | ~286 award documents |
-| Filter type `CHITTA` | Land-record extracts |
+| **Document type** dropdown → `AWARD_7_2` | 286 award documents |
+| **Document type** dropdown → `CHITTA` | Land-record extracts |
+| **Village** / **Legal stage** dropdowns | Values come live from the database with counts (a new upload adds its village/type/stage automatically) |
+| **Search** box: a file name, document number or words on the page | Matching documents (page text is searched too) |
 | Open an award's page | The scanned Tamil page with boxes around extracted values |
 
 ## G. Review queue: what each button does and why
-A review item is **one page the AI was unsure about** (handwriting, blurred print, numbers that don't add up, text read as a table). 1,165 of the 1,302 pages have rows the AI read, about 6 each.
+A review item is **one page the AI was unsure about** (handwriting, blurred print, numbers that don't add up, text read as a table). 1,165 of the 1,302 pages have rows the AI read, about 6 each. Use the **Reason** dropdown (live values with counts, e.g. "Text read as a table (332)") to work through one kind at a time.
 | Button | Meaning | Effect |
 |---|---|---|
-| **Approve values** | The values read from this page are right | All rows on the page → *approved* |
-| **Correct values** → **Save corrections** | Some values are wrong; you type the right ones from the page | Changed rows → *corrected* (**the AI's original values are kept** in `ai_original` for audit, and the parcel facts update); the other rows → *approved* |
+| **Approve page** | The values read from this page are right (including any corrections you saved) | Page finished: rows you corrected stay *corrected*, every other row → *approved* |
+| **Correct values** → **Save corrections** | Some values are wrong; you type the right ones from the page | **Only saves** your values on the changed rows (→ *corrected*; **the AI's original values are kept** in `ai_original`; the parcel facts update). **The page stays open** and shows "N row(s) corrected; click Approve page to finish". It is never approved automatically |
 | **Reject page** | The page is unreadable / not usable | All rows → *rejected* (excluded) |
 | **Confirm: nothing to extract** (pages with no rows) | Nothing on the page to read | Page marked reviewed |
 

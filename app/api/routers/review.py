@@ -89,9 +89,9 @@ async def review_rows(review_id: int) -> dict:
 
 @router.post("/review/{review_id}", response_model=ReviewDecisionResponse)
 async def decide_review(review_id: int, body: ReviewDecisionRequest) -> ReviewDecisionResponse:
-    """approved = the values read from the page are right; corrected = the reviewer fixed some values (the
-    AI's originals are kept under row_json.ai_original); rejected = the page is unreadable / not usable.
-    Every row on the page gets the reviewer's decision (edited rows: corrected; others: approved)."""
+    """corrected = SAVE the reviewer's value fixes on the edited rows (AI originals kept under
+    row_json.ai_original); the page stays open. approved = FINISH the page: rows the reviewer corrected stay
+    'corrected', every other row becomes 'approved'. rejected = the page is unreadable: all rows 'rejected'."""
     if body.decision == "corrected" and not (body.corrections or body.corrected_value):
         raise HTTPException(status_code=400, detail="a correction needs at least one changed value")
     fixes = {c.extraction_id: _clean(c.values) for c in body.corrections}
@@ -110,7 +110,11 @@ async def decide_review(review_id: int, body: ReviewDecisionRequest) -> ReviewDe
             unknown = set(fixes) - set(page_rows)
             if unknown:
                 raise HTTPException(status_code=400, detail=f"rows {sorted(unknown)} are not on this page")
+            current = {r["id"]: r["review_status"] for r in conn.execute(
+                "SELECT id, review_status FROM extraction WHERE id = ANY(%s)", (list(page_rows),)).fetchall()}
             for eid, rj in page_rows.items():
+                if body.decision == "corrected" and eid not in fixes:
+                    continue                                   # saving corrections touches only the edited rows
                 if body.decision == "rejected":
                     status = "rejected"
                 elif eid in fixes:
@@ -126,18 +130,40 @@ async def decide_review(review_id: int, body: ReviewDecisionRequest) -> ReviewDe
                             conn.execute(f"UPDATE parcel_fact SET {col} = %s WHERE extraction_id = %s AND fact_type = %s",
                                          (v, eid, k))
                 else:
-                    status = "approved"
+                    status = "corrected" if current.get(eid) == "corrected" else "approved"   # keep saved corrections
                 conn.execute("UPDATE extraction SET review_status = %s WHERE id = %s", (status, eid))
-            decided = {"decision": body.decision, "rows_on_page": len(page_rows),
-                       "corrections": [{"extraction_id": k, "values": v} for k, v in fixes.items()]}
-            conn.execute("UPDATE review_queue SET status = 'decided', decided_value = %s, decided_by = %s, "
-                         "decided_at = now() WHERE id = %s", (json.dumps(decided), body.decided_by, review_id))
+            prev = conn.execute("SELECT decided_value FROM review_queue WHERE id = %s", (review_id,)).fetchone()["decided_value"] or {}
+            saved = {c["extraction_id"]: c["values"] for c in prev.get("corrections", [])}
+            for k, v in fixes.items():
+                saved[k] = {**saved.get(k, {}), **v}
+            record = {"decision": body.decision, "rows_on_page": len(page_rows),
+                      "corrections": [{"extraction_id": k, "values": v} for k, v in saved.items()]}
+            if body.decision == "corrected":
+                # step 1: corrections are saved on the rows, but the page stays OPEN until someone approves it
+                conn.execute("UPDATE review_queue SET decided_value = %s WHERE id = %s",
+                             (json.dumps({**record, "pending_approval": True}), review_id))
+                state = "open"
+            else:
+                conn.execute("UPDATE review_queue SET status = 'decided', decided_value = %s, decided_by = %s, "
+                             "decided_at = now() WHERE id = %s", (json.dumps(record), body.decided_by, review_id))
+                state = "decided"
             conn.commit()
-            return item["extraction_id"], body.decision
+            return item["extraction_id"], body.decision, state
 
     result = await asyncio.to_thread(_run)
     if result is None:
         raise HTTPException(status_code=404, detail="review item not found")
-    extraction_id, review_status = result
-    return ReviewDecisionResponse(id=review_id, status="decided", extraction_id=extraction_id,
+    extraction_id, review_status, state = result
+    return ReviewDecisionResponse(id=review_id, status=state, extraction_id=extraction_id,
                                   review_status=review_status)
+
+
+@router.get("/review-queue/facets")
+async def review_facets(status: str = "open") -> dict:
+    """Reasons present in the review queue (with counts), live from the database, for the reason dropdown."""
+    def _run():
+        with get_conn() as conn:
+            rows = conn.execute("SELECT reason AS v, count(*) AS n FROM review_queue WHERE status = %s "
+                                "GROUP BY 1 ORDER BY 2 DESC, 1", (status,)).fetchall()
+            return {"reason": [{"value": r["v"], "count": r["n"]} for r in rows]}
+    return await asyncio.to_thread(_run)

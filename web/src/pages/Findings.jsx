@@ -77,12 +77,12 @@ export function Findings() {
       <h1 className="text-lg font-semibold text-gray-900">Findings{list.data ? ` (${list.data.total} open)` : ""}</h1>
 
       {evidenceId && (
-        <section ref={evidenceRef} className="scroll-mt-4">
+        <section ref={evidenceRef} className="mx-auto w-full max-w-4xl scroll-mt-4">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-600">Evidence pack · finding {evidenceId}</h2>
             <button onClick={closeEvidence} className="rounded border border-gray-300 px-2 py-0.5 text-xs text-gray-600">Close</button>
           </div>
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          <div className="space-y-3">
             <EvidencePackPanel findingId={evidenceId} onOpenExtraction={setOpenExtractionId} />
             {openExtractionId && <EvidenceViewer extractionId={openExtractionId} />}
           </div>

@@ -98,7 +98,7 @@ The agent console uses AI models; the free tiers need the keys in `.env`.
 | Component | What it shows |
 |---|---|
 | Catalog table | Type, legal stage, scheme relevance, village/unit/block, date, pages; a badge when the folder name disagrees with the content |
-| Filters / search | By type, stage or text |
+| Filters / search | Dropdowns for village, document type and legal stage (live values with counts; new uploads appear automatically) and a search box (file name, document number or page text) |
 | Page viewer | The scanned page, with boxes around extracted values |
 
 ## Page 7: Models & routing
@@ -116,8 +116,9 @@ The agent console uses AI models; the free tiers need the keys in `.env`.
 | Component | What it does |
 |---|---|
 | Queue item | The page image, why a human is needed (in plain words), the AI's confidence, and how many rows were read from the page |
-| **Approve values** | The values read from the page are right: all its rows become *approved* |
-| **Correct values** → **Save corrections** | A table of the rows read from the page; change only the wrong values (survey, extents, amounts, patta, land class). Changed rows become *corrected*, with the AI's original kept for audit; the rest become *approved*. Owner names stay masked and can't be edited |
+| **Reason** dropdown | Show one kind of problem at a time (live values with counts) |
+| **Approve page** | Finishes the page: rows you corrected stay *corrected*, all others become *approved* |
+| **Correct values** → **Save corrections** | A table of the rows read from the page; change only the wrong values (survey, extents, amounts, patta, land class). Saving **only stores** your corrections (AI's original kept for audit); the page stays open until you click **Approve page**. Owner names stay masked and can't be edited |
 | **Reject page** | The page is unreadable or not usable: its rows are excluded |
 | **Confirm: nothing to extract** | For pages where no rows were read |
 

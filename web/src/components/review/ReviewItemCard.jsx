@@ -30,11 +30,13 @@ export function ReviewItemCard({ item, onDecided, onOpenExtraction }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
 
+  const [reloadKey, setReloadKey] = useState(0);
+  const [saved, setSaved] = useState(null);        // message after "Save corrections"
   useEffect(() => {
     let live = true;
     apiFetch(`/review/${item.id}/rows`).then((res) => { if (live) setRows(res.ok ? res.data.rows : []); });
     return () => { live = false; };
-  }, [item.id]);
+  }, [item.id, reloadKey]);
 
   async function decide(decision) {
     setBusy(true);
@@ -54,6 +56,13 @@ export function ReviewItemCard({ item, onDecided, onOpenExtraction }) {
       return;
     }
     setEditing(false);
+    setDraft({});
+    if (decision === "corrected") {
+      // step 1 only: values are saved on the rows, the page stays open until someone approves it
+      setSaved(`${corrections.length} row(s) corrected and saved. Check them, then click "Approve page" to finish.`);
+      setReloadKey((k) => k + 1);
+      return;
+    }
     onDecided?.(item.id, res.data);
   }
 
@@ -68,6 +77,7 @@ export function ReviewItemCard({ item, onDecided, onOpenExtraction }) {
 
   const conf = item.detail?.confidence;
   const nRows = rows ? rows.length : null;
+  const nCorrected = rows ? rows.filter((r) => r.review_status === "corrected").length : 0;
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-3 text-sm" data-testid="review-item">
@@ -115,8 +125,13 @@ export function ReviewItemCard({ item, onDecided, onOpenExtraction }) {
       )}
       {editing && (
         <p className="mt-1 text-[11px] text-gray-500">
-          Type the correct values from the page. Saving marks this page as reviewed: rows you changed become
-          <b> corrected</b> (the AI&apos;s values are kept for audit), the other rows <b>approved</b>.
+          Type the correct values from the page and click <b>Save corrections</b>. This only saves your values
+          (the AI&apos;s values are kept for audit); the page stays open. Click <b>Approve page</b> afterwards to finish.
+        </p>
+      )}
+      {nCorrected > 0 && !editing && (
+        <p className="mt-1 rounded bg-sky-50 px-2 py-1 text-[11px] text-sky-800" data-testid="review-pending">
+          {saved || `${nCorrected} row(s) corrected, waiting for approval.`}
         </p>
       )}
       {err && <p className="mt-1 text-xs text-rose-600">{err}</p>}
@@ -132,7 +147,7 @@ export function ReviewItemCard({ item, onDecided, onOpenExtraction }) {
             <>
               <button disabled={busy || nRows === null} onClick={() => decide("approved")} className="rounded bg-emerald-600 px-2 py-1 font-medium text-white disabled:opacity-40"
                 title={nRows ? "The values read from this page are right" : "Confirm the page has no table data to extract"}>
-                {nRows ? "Approve values" : "Confirm: nothing to extract"}
+                {nRows ? (nCorrected ? "Approve page (with corrections)" : "Approve page") : "Confirm: nothing to extract"}
               </button>
               {nRows > 0 && (
                 <button disabled={busy} onClick={() => setEditing(true)} className="rounded border border-gray-300 px-2 py-1">Correct values</button>
