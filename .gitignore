@@ -31,3 +31,4 @@ web/playwright-report*/
 *.log
 eval/heldout2/pages/
 eval/heldout2/labels.jsonl
+.venv-win/

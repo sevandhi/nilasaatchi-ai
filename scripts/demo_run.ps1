@@ -3,6 +3,7 @@
 # (the database container keeps running; stop it with: docker compose stop db).
 $ErrorActionPreference = "Continue"   # exit codes are checked explicitly; "Stop" would abort on native stderr in PowerShell 5.1
 Set-Location (Split-Path -Parent $PSScriptRoot)
+$env:UV_PROJECT_ENVIRONMENT = Join-Path (Get-Location).Path ".venv-win"   # same env as SETUP-WINDOWS
 $env:Path = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
             [Environment]::GetEnvironmentVariable("Path", "User") + ";" + "$env:USERPROFILE\.local\bin"
 $Log = "data\logs"; New-Item -ItemType Directory -Force -Path $Log | Out-Null

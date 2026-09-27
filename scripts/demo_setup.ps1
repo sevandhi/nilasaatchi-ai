@@ -5,6 +5,9 @@
 $ErrorActionPreference = "Continue"   # exit codes are checked explicitly; "Stop" would abort on native stderr in PowerShell 5.1
 Set-Location (Split-Path -Parent $PSScriptRoot)
 $Root = (Get-Location).Path
+# Windows gets its own Python environment folder: a ".venv" made earlier by bash/WSL contains Linux
+# symlinks that Windows cannot delete ("Access is denied" on .venv\lib64).
+$env:UV_PROJECT_ENVIRONMENT = Join-Path $Root ".venv-win"
 
 function Say($m) { Write-Host ""; Write-Host "==> $m" -ForegroundColor Green }
 function Fail($m) { Write-Host ""; Write-Host "!! $m" -ForegroundColor Red; exit 1 }
