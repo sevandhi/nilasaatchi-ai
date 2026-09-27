@@ -1,13 +1,12 @@
-import { RetryImg } from "../components/common/RetryImg.jsx";
 import { FacetSelect } from "../components/common/FacetSelect.jsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { DocumentListResponseSchema } from "../api/schemas.js";
 import { useApi } from "../hooks/useApi.js";
 import { Widget } from "../components/common/Widget.jsx";
 import { DataTable } from "../components/common/DataTable.jsx";
-import { EvidenceViewer } from "../components/evidence/EvidenceViewer.jsx";
-import { assetUrl, READ_ONLY } from "../api/client.js";
+import { DocumentModal } from "../components/evidence/DocumentModal.jsx";
+import { apiFetch, READ_ONLY } from "../api/client.js";
 import { useStore } from "../store/useStore.js";
 import { fmtDate } from "../lib/format.js";
 import { UploadPanel } from "../components/ingest/UploadPanel.jsx";
@@ -43,9 +42,20 @@ export function Documents() {
   const uploads = useApi(READ_ONLY ? null : "/ingest/jobs", { schema: IngestJobListResponseSchema, params: { kind: "document", limit: 20 } });
   const [expandedJobId, setExpandedJobId] = useState(null);
 
-  const [activeDoc, setActiveDoc] = useState(null);
-  const [page, setPage] = useState(1);
+  const [activeDoc, setActiveDoc] = useState(null);   // {id, page, bbox?} shown in the document popup
   const extractionParam = params.get("extraction");
+
+  // deep link ?extraction=<id>: open the document popup at that value's page, with its evidence box
+  useEffect(() => {
+    if (!extractionParam) return;
+    let live = true;
+    apiFetch(`/evidence/${extractionParam}`).then((res) => {
+      if (live && res.ok && res.data?.document_id) {
+        setActiveDoc({ id: res.data.document_id, page: res.data.page_no || 1, bbox: res.data.bbox || null });
+      }
+    });
+    return () => { live = false; };
+  }, [extractionParam]);
 
   return (
     <div className="space-y-4">
@@ -132,7 +142,7 @@ export function Documents() {
           <DataTable
             columns={COLUMNS}
             rows={list.data?.items || []}
-            onRowClick={(r) => { setActiveDoc(r); setPage(1); }}
+            onRowClick={(r) => setActiveDoc({ id: r.id, page: 1 })}
             rowKey={(r) => String(r.id)}
             selectedKey={activeDoc ? String(activeDoc.id) : null}
             csvName="documents"
@@ -145,34 +155,10 @@ export function Documents() {
         </Widget>
       </section>
 
-      <section>
-        <h2 className="mb-2 text-sm font-semibold text-gray-600">Page viewer</h2>
-        {extractionParam ? (
-          <div>
-            <button onClick={() => setParams({})} className="mb-2 text-xs text-emerald-700 underline">close deep-linked evidence</button>
-            <EvidenceViewer extractionId={Number(extractionParam)} />
-          </div>
-        ) : activeDoc ? (
-          <div className="rounded-lg border border-gray-200 bg-white p-3">
-            <div className="mb-2 flex items-center gap-2 text-xs">
-              <span className="font-mono text-gray-500">doc {activeDoc.id}</span>
-              <span className="truncate text-gray-400">{activeDoc.path}</span>
-              <div className="ml-auto flex items-center gap-1">
-                <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="rounded border px-1.5 disabled:opacity-30">◀</button>
-                <span>page {page}/{activeDoc.pages}</span>
-                <button disabled={page >= activeDoc.pages} onClick={() => setPage((p) => p + 1)} className="rounded border px-1.5 disabled:opacity-30">▶</button>
-              </div>
-            </div>
-            <RetryImg src={assetUrl(`/documents/${activeDoc.id}/pages/${page}.webp`)} alt={`page ${page}`} className="max-h-[32rem] w-auto rounded border" />
-            <p className="mt-1 text-[11px] text-gray-400">
-              Bounding-box overlays need a specific extraction id — open a page from a parcel&rsquo;s Documents section, or
-              append <code>?extraction=&lt;id&gt;</code> to this page&rsquo;s URL.
-            </p>
-          </div>
-        ) : (
-          <p className="text-xs text-gray-400">Click a row in the catalog to preview its pages.</p>
-        )}
-      </section>
+      {activeDoc && (
+        <DocumentModal documentId={activeDoc.id} page={activeDoc.page || 1} bbox={activeDoc.bbox || null}
+          title={activeDoc.title} onClose={() => { setActiveDoc(null); if (extractionParam) setParams({}); }} />
+      )}
     </div>
   );
 }

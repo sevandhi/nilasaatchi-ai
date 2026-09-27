@@ -99,7 +99,7 @@ The agent console uses AI models; the free tiers need the keys in `.env`.
 |---|---|
 | Catalog table | Type, legal stage, scheme relevance, village/unit/block, date, pages; a badge when the folder name disagrees with the content |
 | Filters / search | Dropdowns for village, document type and legal stage (live values with counts; new uploads appear automatically) and a search box (file name, document number or page text) |
-| Page viewer | The scanned page, with boxes around extracted values |
+| Document viewer (popup) | Click any row to open the scanned document in a popup: ‹ Prev / Next › pages, page X of N, Close (or Esc / click outside). Links to a specific value open at its page with a red box around it |
 
 ## Page 7: Models & routing
 **Purpose:** which AI models the system uses, why, and at what cost. **All data is live** from the API (router configuration, the latest health check, usage logs).
