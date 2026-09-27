@@ -115,7 +115,7 @@ The agent console uses AI models; the free tiers need the keys in `.env`.
 **Purpose:** a person checks pages the AI was unsure about (handwriting, blurred scans, numbers that don't add up, text read as a table).
 | Component | What it does |
 |---|---|
-| Queue item | The page image, why a human is needed (in plain words), the AI's confidence, and how many rows were read from the page |
+| Queue item | The page image (click it to open the full document in a popup with previous / next pages), why a human is needed (in plain words), the AI's confidence, and how many rows were read from the page |
 | **Reason** dropdown | Show one kind of problem at a time (live values with counts) |
 | **Approve page** | Finishes the page: rows you corrected stay *corrected*, all others become *approved* |
 | **Correct values** → **Save corrections** | A table of the rows read from the page; change only the wrong values (survey, extents, amounts, patta, land class). Saving **only stores** your corrections (AI's original kept for audit); the page stays open until you click **Approve page**. Owner names stay masked and can't be edited |

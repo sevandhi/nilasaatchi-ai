@@ -30,7 +30,10 @@ export function SeasonSlider({ onChange, recolorNote }) {
       return;
     }
     timerRef.current = setInterval(() => {
-      const cur = Math.max(0, SEASONS.indexOf(useStore.getState().filters.season));
+      const st = useStore.getState();
+      // wait until the map is showing the current season before moving on (smooth, no skipped frames)
+      if (st.mapSeason && st.mapSeason !== st.filters.season) return;
+      const cur = Math.max(0, SEASONS.indexOf(st.filters.season));
       const next = SEASONS[(cur + 1) % SEASONS.length];
       setFilter("season", next);
       onChange?.(next);

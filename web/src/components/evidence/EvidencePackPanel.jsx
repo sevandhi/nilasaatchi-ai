@@ -2,7 +2,9 @@ import { RetryImg } from "../common/RetryImg.jsx";
 import { useApi } from "../../hooks/useApi.js";
 import { Widget } from "../common/Widget.jsx";
 import { VerdictBadge, ConfidencePill, StatusBadge } from "../common/Badge.jsx";
-import { assetUrl } from "../../api/client.js";
+import { apiFetch, assetUrl } from "../../api/client.js";
+import { DocumentModal } from "./DocumentModal.jsx";
+import { useState } from "react";
 import { DidTable } from "../parcel/DidTable.jsx";
 import { chipDates } from "../../lib/chips.js";
 import { useStore } from "../../store/useStore.js";
@@ -86,8 +88,9 @@ function Part({ title, children }) {
   );
 }
 
-export function EvidencePackPanel({ findingId, onOpenExtraction }) {
+export function EvidencePackPanel({ findingId, onOpenExtraction }) {   // eslint-disable-line no-unused-vars
   const demoMask = useStore((s) => s.demoMask);
+  const [docView, setDocView] = useState(null);
   const { status, data, error, reload } = useApi(findingId ? `/findings/${findingId}/evidence-pack` : null, {}, [findingId]);
   if (!findingId) return <Widget status="empty" emptyReason="Select a finding to open its evidence pack." />;
 
@@ -107,8 +110,26 @@ export function EvidencePackPanel({ findingId, onOpenExtraction }) {
   const chips = chipDates(planet.chips?.cached);
   const parcelUid = pack?.parcel_uid;
 
+  // open the source document in a modal at the evidence page (rows without a page number look it up
+  // from their extraction's evidence box)
+  async function openDoc(p) {
+    if (p.document_id && p.page_no) {
+      setDocView({ documentId: p.document_id, page: p.page_no, bbox: p.bbox || null, title: docLabel(p.document) });
+      return;
+    }
+    if (p.extraction_id) {
+      const res = await apiFetch(`/evidence/${p.extraction_id}`);
+      if (res.ok && res.data?.document_id) {
+        setDocView({ documentId: res.data.document_id, page: res.data.page_no || 1, bbox: res.data.bbox || null, title: docLabel(p.document) });
+        return;
+      }
+    }
+    if (p.document_id) setDocView({ documentId: p.document_id, page: 1, bbox: null, title: docLabel(p.document) });
+  }
+
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-3" data-testid="evidence-pack">
+      {docView && <DocumentModal {...docView} onClose={() => setDocView(null)} />}
       <Widget status={status} error={error} onRetry={reload} minHeight="16rem">
         {pack && (
           <div className="space-y-3 text-sm">
@@ -136,8 +157,8 @@ export function EvidencePackPanel({ findingId, onOpenExtraction }) {
                   <li key={i} className="rounded border border-gray-200 p-2 text-xs">
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{textOf(p.doc_type || p.stage) || "event"} · {textOf(p.date || p.event_date) || "—"}</span>
-                      {p.extraction_id && (
-                        <button onClick={() => onOpenExtraction?.(p.extraction_id)} className="text-emerald-700 underline">open evidence</button>
+                      {(p.document_id || p.extraction_id) && (
+                        <button onClick={() => openDoc(p)} className="rounded bg-emerald-600 px-2 py-0.5 font-medium text-white" data-testid="view-document">View document</button>
                       )}
                     </div>
                     <div className="mt-0.5 text-gray-500">{docLabel(p.document) || textOf(p.note)}</div>

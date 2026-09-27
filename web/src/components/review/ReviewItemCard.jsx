@@ -2,6 +2,7 @@ import { RetryImg } from "../common/RetryImg.jsx";
 import { useEffect, useState } from "react";
 import { assetUrl, apiFetch, READ_ONLY } from "../../api/client.js";
 import { StatusBadge } from "../common/Badge.jsx";
+import { DocumentModal } from "../evidence/DocumentModal.jsx";
 
 function pageNoFromRef(pageRef) {
   const m = /#p(\d+)$/.exec(pageRef || "");
@@ -32,6 +33,7 @@ export function ReviewItemCard({ item, onDecided, onOpenExtraction }) {
 
   const [reloadKey, setReloadKey] = useState(0);
   const [saved, setSaved] = useState(null);        // message after "Save corrections"
+  const [docOpen, setDocOpen] = useState(false);   // full-page document viewer (modal)
   useEffect(() => {
     let live = true;
     apiFetch(`/review/${item.id}/rows`).then((res) => { if (live) setRows(res.ok ? res.data.rows : []); });
@@ -85,8 +87,14 @@ export function ReviewItemCard({ item, onDecided, onOpenExtraction }) {
         <span className="font-mono text-xs text-gray-400">#{item.id}</span>
         <StatusBadge status={item.status} />
       </div>
+      {docOpen && (
+        <DocumentModal documentId={item.document_id} page={pageNoFromRef(item.page_ref)} title={`Review item #${item.id}`} onClose={() => setDocOpen(false)} />
+      )}
       {item.document_id ? (
-        <RetryImg src={assetUrl(`/documents/${item.document_id}/pages/${pageNoFromRef(item.page_ref)}.webp`)} alt="page crop" className="mb-2 h-32 w-full rounded border object-cover" />
+        <button type="button" onClick={() => setDocOpen(true)} className="group relative mb-2 block w-full" title="Open the full page (with previous / next pages)" data-testid="review-open-page">
+          <RetryImg src={assetUrl(`/documents/${item.document_id}/pages/${pageNoFromRef(item.page_ref)}.webp`)} alt="page crop" className="h-32 w-full rounded border object-cover" />
+          <span className="absolute bottom-1 right-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white group-hover:bg-black/80">View full page ⤢</span>
+        </button>
       ) : (
         <div className="mb-2 flex h-32 items-center justify-center rounded border border-dashed text-xs text-gray-400">no page image</div>
       )}

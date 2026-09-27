@@ -5,6 +5,8 @@ import { apiFetch, assetUrl } from "../../api/client.js";
 import { categoricalStyle, sequentialStyle, propertyAvailable } from "../../lib/colorScale.js";
 import { Legend } from "./Legend.jsx";
 import { Widget } from "../common/Widget.jsx";
+import { SEASONS } from "./SeasonSlider.jsx";
+import { useStore } from "../../store/useStore.js";
 
 // Free vector basemap, no token (D-011 / phase6 "no paid services"). OpenFreeMap serves
 // OSM-derived vector tiles at no cost and needs no API key.
@@ -108,37 +110,74 @@ export function MapView({ layers, colorBy, onParcelClick, selectedParcelUid, sea
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layers.map((l) => l.id + (l.ref_layer || "")).join(",")]);
 
-  // Seasonal colourings (land use, stage by season) need the parcel layer re-fetched with ?season=…
-  // (app/api/layers.py). Fetch first, then colour, so the legend never shows "not available" while
-  // the season's data is on its way. Non-seasonal colourings just repaint the data already loaded.
+  // Seasonal colourings (land use, stage by season) need the parcel layer with ?season=… (app/api/layers.py).
+  // Each season is fetched once and cached; when a seasonal colouring is chosen, every season is prefetched in
+  // the background so Play is smooth. While a season loads, the previous colours and legend stay on screen.
+  const seasonCacheRef = useRef(new Map());      // season -> FeatureCollection (parcel layer)
+  const inflightRef = useRef(new Map());          // season -> Promise
+  const setMapSeason = useStore((st) => st.setMapSeason);
+  const parcelLayer = layers.find((l) => l.kind === "parcels");
+
+  function fetchSeason(ssn) {
+    if (seasonCacheRef.current.has(ssn)) return Promise.resolve(seasonCacheRef.current.get(ssn));
+    if (inflightRef.current.has(ssn)) return inflightRef.current.get(ssn);
+    const pr = apiFetch(`/layers/${parcelLayer.ref_layer}.geojson`, { params: { season: ssn } }).then((res) => {
+      inflightRef.current.delete(ssn);
+      if (!res.ok) return null;
+      seasonCacheRef.current.set(ssn, res.data);
+      return res.data;
+    });
+    inflightRef.current.set(ssn, pr);
+    return pr;
+  }
+
+  function showSeason(map, fc, ssn) {
+    dataRef.current[parcelLayer.id] = fc;
+    map.getSource(`src-${parcelLayer.id}`)?.setData(fc);
+    loadedSeasonRef.current = ssn;
+    applyColorBy(map, layers, dataRef.current, colorBy, setLegend);
+    setMapSeason(ssn);
+  }
+
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || status !== "ok") return;
-    const parcelLayers = layers.filter((l) => l.kind === "parcels");
-    const hasProp = parcelLayers.every((l) => propertyAvailable(dataRef.current[l.id]?.features || [], colorBy?.property));
-    if (!colorBy?.seasonal || !season || (loadedSeasonRef.current === season && hasProp)) {
+    if (!map || status !== "ok" || !parcelLayer) return;
+    if (!colorBy?.seasonal || !season) {
       applyColorBy(map, layers, dataRef.current, colorBy, setLegend);
+      setMapSeason(null);
       return;
     }
     let cancelled = false;
-    setLegend({ title: colorBy.label, items: [], note: `Loading ${season}…` });
-    (async () => {
-      for (const layer of parcelLayers) {
-        const res = await apiFetch(`/layers/${layer.ref_layer}.geojson`, { params: { season } });
-        if (cancelled || !res.ok) continue;
-        dataRef.current[layer.id] = res.data;
-        map.getSource(`src-${layer.id}`)?.setData(res.data);
-      }
-      if (!cancelled) {
-        loadedSeasonRef.current = season;
-        applyColorBy(map, layers, dataRef.current, colorBy, setLegend);
-      }
-    })();
+    const cached = seasonCacheRef.current.get(season);
+    if (cached) {
+      showSeason(map, cached, season);
+    } else {
+      setLegend((lg) => ({ ...(lg || {}), title: colorBy.label, loading: `loading ${season}…` }));
+      fetchSeason(season).then((fc) => {
+        if (!cancelled && fc) showSeason(map, fc, season);
+      });
+    }
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [colorBy, season, status]);
+
+  // background prefetch of every season once a seasonal colouring is active (sequential, low priority)
+  useEffect(() => {
+    if (status !== "ok" || !colorBy?.seasonal || !parcelLayer) return;
+    let stop = false;
+    (async () => {
+      for (const ssn of SEASONS) {
+        if (stop) return;
+        await fetchSeason(ssn);
+      }
+    })();
+    return () => {
+      stop = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [colorBy?.seasonal, status]);
 
   // highlight selection
   useEffect(() => {
@@ -188,7 +227,7 @@ export function MapView({ layers, colorBy, onParcelClick, selectedParcelUid, sea
         ))}
       </div>
       {status === "ok" ? (
-        <Legend title={legend.title} items={legend.items} note={legend.note} />
+        <Legend title={legend.title} items={legend.items} note={legend.note || legend.loading} />
       ) : status === "loading" ? (
         <Legend title="Legend" items={[]} note="Loading…" />
       ) : null}
@@ -260,7 +299,7 @@ function applyColorBy(map, layers, dataMap, colorBy, setLegend) {
     setLegend({ title: colorBy.label, items: [], note: `Not available yet: '${colorBy.property}' is not present on /layers/${parcelLayer.ref_layer}.geojson.` });
     return;
   }
-  const style = colorBy.scale === "sequential" ? sequentialStyle(features, colorBy.property, colorBy.order) : categoricalStyle(features, colorBy.property, colorBy.order);
+  const style = colorBy.scale === "sequential" ? sequentialStyle(features, colorBy.property, colorBy.order) : categoricalStyle(features, colorBy.property, colorBy.order, !!colorBy.seasonal);
   map.setPaintProperty(`${parcelLayer.id}-fill`, "fill-color", style.paint);
   setLegend({ title: colorBy.label, items: style.legend });
 }

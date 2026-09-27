@@ -30,6 +30,10 @@ export const useStore = create((set, get) => ({
   setFilter: (key, value) => set((s) => ({ filters: { ...s.filters, [key]: value } })),
   resetFilters: () => set({ filters: { village: null, stage: null, category: null, severity: null, block: null, level: null, season: "2025-rabi" } }),
 
+  // season whose data the map is currently showing (the season slider's Play waits for it)
+  mapSeason: null,
+  setMapSeason: (mapSeason) => set({ mapSeason }),
+
   // --- UI toggles ---
   demoMask: true,
   toggleDemoMask: () => set((s) => ({ demoMask: !s.demoMask })),

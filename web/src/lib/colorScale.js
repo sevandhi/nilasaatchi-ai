@@ -26,13 +26,15 @@ export function propertyAvailable(features, property) {
 const NEUTRAL_VALUES = { NOT_STARTED: "#d1d5db", "No documents linked": "#d1d5db", "No possession evidence": "#d1d5db",
   "No significant change": "#9ca3af" };
 
-export function categoricalStyle(features, property, order) {
+export function categoricalStyle(features, property, order, includeAll = false) {
   const values = new Set();
   for (const f of features) {
     const v = f.properties?.[property];
     if (v !== null && v !== undefined) values.add(v);
   }
-  const ordered = order ? order.filter((v) => values.has(v)).concat([...values].filter((v) => !order.includes(v))) : [...values];
+  // includeAll: keep every category of `order` in the legend (stable while a slider moves)
+  const known = order ? (includeAll ? order : order.filter((v) => values.has(v))) : [];
+  const ordered = order ? known.concat([...values].filter((v) => !order.includes(v))) : [...values];
   // stable colours: a value keeps its colour however many other values are on screen (e.g. while the
   // season slider moves); "nothing yet / no data" values are grey
   const slot = (v, i) => (order && order.includes(v) ? order.indexOf(v) : (order ? order.length : 0) + i);

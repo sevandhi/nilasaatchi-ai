@@ -139,7 +139,7 @@ How to show it correctly:
 | **Change vs never-acquired farmland (after possession)** | no (one comparison per parcel) | 117 vigour dropped (north), 246 still farmland-like (south-east), 879 no significant change |
 | **Document link level** | no | 1,081 parcel-level documents, 149 block-level only, 11 survey-level, 1 none |
 
-The slider runs from **2018-rabi** (partial: satellite imagery starts Jan 2019) to 2026-summer. Colours stay the same for a stage as the slider moves, and grey means "not yet / no data". Hover a parcel to see its stage, findings and, for the seasonal options, that season's values.
+The slider runs from **2018-rabi** (partial: satellite imagery starts Jan 2019) to 2026-summer. After you choose a seasonal colouring, all seasons load in the background (a few seconds), then **Play** runs smoothly (~0.7 s per season; it waits if a season is still loading). The legend always lists every category in the same order with the same colours; grey means "not yet / no data". Hover a parcel to see its stage, findings and, for the seasonal options, that season's values.
 
 **Layers to tick:**
 | Layers | What to show |
@@ -171,6 +171,8 @@ Each filter is a dropdown listing the values present in the data, with counts; c
 | level `village` | 2 (**1987** Ramasamypuram 95.23 vs 99.895 ha; **7537** Keelathattaparai 193.15 vs 195.48 ha) |
 | `PV4_IDLE_LAND_BANK` | 79 blocks (open **1257**: largest, 13.5 ha, 31 parcels) |
 
+**View the source document:** in the evidence pack, each paper row has **View document**, which opens the scanned document in a popup at the evidence page, with a **red box** around the rows used, **‹ Prev / Next ›** pages, and **Close** (or Esc / click outside).
+
 **Best findings to open:** `1977` (compensation, verified), `1760` (extent, verified), `2052` (map overlap), `1987` (proposal vs sanction), `1337` (land class), `1152` (vigour drop), `3738` (ploughing signal), `1257` (idle block). Every evidence pack opens without errors (37 random findings + 16 post-possession ones tested).
 
 **Honest note:** on the scanned pages, extent mismatches were confirmed 5/5 but compensation mismatches only 1/5 (merged cells, tree columns). Present compensation findings as leads.
@@ -187,7 +189,7 @@ Each filter is a dropdown listing the values present in the data, with counts; c
 | Open an award's page | The scanned Tamil page with boxes around extracted values |
 
 ## G. Review queue: what each button does and why
-A review item is **one page the AI was unsure about** (handwriting, blurred print, numbers that don't add up, text read as a table). 1,165 of the 1,302 pages have rows the AI read, about 6 each. Use the **Reason** dropdown (live values with counts, e.g. "Text read as a table (332)") to work through one kind at a time.
+A review item is **one page the AI was unsure about** (handwriting, blurred print, numbers that don't add up, text read as a table). 1,165 of the 1,302 pages have rows the AI read, about 6 each. Use the **Reason** dropdown (live values with counts, e.g. "Text read as a table (332)") to work through one kind at a time. Click the page image (**View full page ⤢**) to open the document in a popup at that page and move through it with **‹ Prev / Next ›**.
 | Button | Meaning | Effect |
 |---|---|---|
 | **Approve page** | The values read from this page are right (including any corrections you saved) | Page finished: rows you corrected stay *corrected*, every other row → *approved* |

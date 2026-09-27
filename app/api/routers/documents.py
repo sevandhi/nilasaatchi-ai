@@ -171,3 +171,17 @@ async def document_facets() -> dict:
                 out[key] = [{"value": r["v"], "count": r["n"]} for r in rows]
             return out
     return await asyncio.to_thread(_run)
+
+
+@router.get("/documents/{document_id}/meta")
+async def document_meta(document_id: int) -> dict:
+    """Page count and plain details of one document, for the document viewer (prev / next page)."""
+    def _run():
+        with get_conn() as conn:
+            return conn.execute("SELECT id, pages, classified_type, stage, village, folder_label, "
+                                "regexp_replace(path, '^.*/', '') AS file_name FROM document WHERE id = %s",
+                                (document_id,)).fetchone()
+    row = await asyncio.to_thread(_run)
+    if row is None:
+        raise HTTPException(status_code=404, detail="document not found")
+    return dict(row)
