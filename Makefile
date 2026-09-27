@@ -169,3 +169,17 @@ demo:            ## start everything: database + API (:8000) + web UI (:5173); C
 
 package:         ## build dist/nilasaatchi-demo.tar (code + DB dump + runtime data) for another machine
 	bash scripts/package_demo.sh
+
+cloud-export:    ## D-067: snapshot the read-only API (needs the local API on :8000) -> data/cloud/snapshot
+	$(UV) python scripts/cloud_export.py
+
+cloud-package:   ## D-067: build dist/cloud/lambda.zip (cloud app + read-only web build)
+	bash scripts/cloud_package.sh
+
+cloud-deploy:    ## D-067: sync data to S3 + create/update Lambda + HTTP API (AWS SSO; confirm with the user first)
+	bash infra/cloud_demo/deploy.sh
+
+cloud-down:      ## D-067: tear down the cloud demo (asks for confirmation)
+	bash infra/cloud_demo/teardown.sh
+
+.PHONY: cloud-export cloud-package cloud-deploy cloud-down demo demo-setup package

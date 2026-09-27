@@ -1,3 +1,4 @@
+import { RetryImg } from "../components/common/RetryImg.jsx";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useApi } from "../hooks/useApi.js";
@@ -106,8 +107,8 @@ export function ParcelPage() {
                   {chips.map((c) => (
                     <figure key={c.date} className="text-center text-[10px] text-gray-500">
                       <div className="flex gap-1">
-                        {c.kinds.includes("truecolor") && <img src={assetUrl(`/chips/${encodeURIComponent(uid)}/${c.date}.png?kind=truecolor`)} alt={`${c.date} true colour`} className="h-16 w-16 rounded border object-cover" />}
-                        {c.kinds.includes("ndvi") && <img src={assetUrl(`/chips/${encodeURIComponent(uid)}/${c.date}.png?kind=ndvi`)} alt={`${c.date} NDVI`} className="h-16 w-16 rounded border object-cover" />}
+                        {c.kinds.includes("truecolor") && <RetryImg src={assetUrl(`/chips/${encodeURIComponent(uid)}/${c.date}.png?kind=truecolor`)} alt={`${c.date} true colour`} className="h-16 w-16 rounded border object-cover" />}
+                        {c.kinds.includes("ndvi") && <RetryImg src={assetUrl(`/chips/${encodeURIComponent(uid)}/${c.date}.png?kind=ndvi`)} alt={`${c.date} NDVI`} className="h-16 w-16 rounded border object-cover" />}
                       </div>
                       <figcaption>{c.date}</figcaption>
                     </figure>

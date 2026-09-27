@@ -1,3 +1,4 @@
+import { RetryImg } from "../common/RetryImg.jsx";
 import { useRef, useState } from "react";
 import { EvidenceResponseSchema } from "../../api/schemas.js";
 import { useApi } from "../../hooks/useApi.js";
@@ -51,7 +52,7 @@ export function EvidenceViewer({ extractionId, extractionIds, onNavigate }) {
         {data && (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div className="relative">
-              <img
+              <RetryImg
                 ref={imgRef}
                 src={assetUrl(`/documents/${data.document_id}/pages/${data.page_no}.webp`)}
                 alt={`page ${data.page_no} of document ${data.document_id}`}

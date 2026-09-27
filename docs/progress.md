@@ -176,3 +176,8 @@ User: P7 + read-only cloud demo (D-067); AWS create approved (bucket fai-tce-tea
 | T7.4 AWS deploy + Bedrock-from-Lambda self-test | lead | public URL, infra/RESOURCES.md | aws-cost before/after; URL loads all read-only pages |
 | T7.5 README, architecture, eval report, 8-min demo script, proposal status appendix | docs-writer | README.md, docs/architecture.md, docs/eval-report.md, docs/demo-script.md | after T7.3 + T7.4 |
 Done already (earlier today): make demo / demo-setup / package, ref/ separation, upload path + report (D-063..D-066).
+
+## Update 2026-09-28 00:20: ✅ Phase 7 done (with stated gaps)
+- Read-only cloud demo live: https://lv7b9630q6.execute-api.ap-south-1.amazonaws.com/ (Lambda + API Gateway + private S3; Bedrock from Lambda verified).
+- Final metrics in docs/metrics.md; demo script docs/demo-script.md; README + proposal status appendix; GitHub https://github.com/sevandhi/nilasaatchi-ai.
+- Not done: findings-precision audit, route comparison, a clean-machine run of `make demo-setup`.

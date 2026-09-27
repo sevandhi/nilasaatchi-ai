@@ -409,3 +409,16 @@ Each member **owns** a workstream: they set its direction, review its output and
 ---
 
 *Engineering plan: `plan.md`. Spike evidence: `docs/spikes/sentinel2-spike.md`. Domain reference: `.claude/skills/land-domain-knowledge/SKILL.md`.*
+
+---
+
+## Appendix: Status / measured results (2026-09-28)
+Built and running. Every number was measured (details in docs/metrics.md, decisions in docs/decisions.md).
+- **Live:** read-only cloud demo on AWS Lambda + API Gateway (Mumbai), https://lv7b9630q6.execute-api.ap-south-1.amazonaws.com/. The full app runs locally with `make demo`. Code: https://github.com/sevandhi/nilasaatchi-ai.
+- **Knowledge graph:** 2,362 documents, 26,269 extracted rows, 42,380 facts, 15,342 acquisition events, 1,242 parcels (87% with document facts), 382,536 satellite observations (2019 → 2026-09-26), 1,388 findings with evidence packs.
+- **Accuracy (unseen pages):** survey 89.5%, owner 83.3%, extent 79.2%, headers 91.1%. That is below the stated targets, so uncertain rows go to a human Review queue.
+- **Agent:** 8/8 answers match SQL references (including unseen and Tamil questions); the critic is always another vendor; the audit ledger is verified.
+- **New data:** uploads processed end to end (20/20 unseen documents, 387 parcel links) with a downloadable verification report. An incremental Sentinel-2 refresh added the 2026-09-26 scene.
+- **Privacy:** 0 of 14,202 owner-data (PII) model calls went to a model that trains on inputs.
+- **Cost:** AWS Cost Explorer US$0.79 (router estimate ~US$8) of the US$100 event budget; all other models on free tiers.
+- **Not met / not measured:** planet student macro-F1 0.634 (target 0.80); agent p50 latency ~50 s (target 25 s); findings-precision audit and route comparison not run.

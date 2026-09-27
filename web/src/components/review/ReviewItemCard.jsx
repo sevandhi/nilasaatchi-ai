@@ -1,3 +1,4 @@
+import { RetryImg } from "../common/RetryImg.jsx";
 import { useState } from "react";
 import { assetUrl, apiFetch, READ_ONLY } from "../../api/client.js";
 import { StatusBadge } from "../common/Badge.jsx";
@@ -34,7 +35,7 @@ export function ReviewItemCard({ item, onDecided, onOpenExtraction }) {
         <StatusBadge status={item.status} />
       </div>
       {item.document_id ? (
-        <img src={assetUrl(`/documents/${item.document_id}/pages/${pageNoFromRef(item.page_ref)}.webp`)} alt="page crop" className="mb-2 h-32 w-full rounded border object-cover" />
+        <RetryImg src={assetUrl(`/documents/${item.document_id}/pages/${pageNoFromRef(item.page_ref)}.webp`)} alt="page crop" className="mb-2 h-32 w-full rounded border object-cover" />
       ) : (
         <div className="mb-2 flex h-32 items-center justify-center rounded border border-dashed text-xs text-gray-400">no page image</div>
       )}

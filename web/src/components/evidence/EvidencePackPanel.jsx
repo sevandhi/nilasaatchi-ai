@@ -1,3 +1,4 @@
+import { RetryImg } from "../common/RetryImg.jsx";
 import { useApi } from "../../hooks/useApi.js";
 import { Widget } from "../common/Widget.jsx";
 import { VerdictBadge, ConfidencePill, StatusBadge } from "../common/Badge.jsx";
@@ -89,8 +90,8 @@ export function EvidencePackPanel({ findingId, onOpenExtraction }) {
                   {chips.map((c) => (
                     <figure key={c.date} className="text-center text-[10px] text-gray-500">
                       <div className="flex gap-1">
-                        {c.kinds.includes("truecolor") && <img src={assetUrl(`/chips/${encodeURIComponent(parcelUid)}/${c.date}.png?kind=truecolor`)} alt={c.date} className="h-16 w-16 rounded border object-cover" />}
-                        {c.kinds.includes("ndvi") && <img src={assetUrl(`/chips/${encodeURIComponent(parcelUid)}/${c.date}.png?kind=ndvi`)} alt={c.date} className="h-16 w-16 rounded border object-cover" />}
+                        {c.kinds.includes("truecolor") && <RetryImg src={assetUrl(`/chips/${encodeURIComponent(parcelUid)}/${c.date}.png?kind=truecolor`)} alt={c.date} className="h-16 w-16 rounded border object-cover" />}
+                        {c.kinds.includes("ndvi") && <RetryImg src={assetUrl(`/chips/${encodeURIComponent(parcelUid)}/${c.date}.png?kind=ndvi`)} alt={c.date} className="h-16 w-16 rounded border object-cover" />}
                       </div>
                       <figcaption>{c.date}</figcaption>
                     </figure>

@@ -36,3 +36,26 @@
 | 2026-09-27 | Findings engine (P5 T5.3–T5.5) | 1,388 findings: PV3 380 (117 medium drop vs controls, 263 low "still farmed" leads), PV4 79 blocks / 834 ha idle, compensation 127 (43 high), extent 485 (21 high), doc drift 2, FMB 270, class conflict 13, extraction errors 32 | — | `make findings` |
 | 2026-09-27 | **Agent end-to-end on the real KG (8 queries: 4 demo + 4 unseen incl. Tamil)** | plan validity 8/8 · expected tool 8/8 · answers match SQL reference 8/8 · tool success 15/17 · verified-claim rate 0.785 · critic always another vendor (24/24) · p50 50.5 s · actual $0 (shadow $0.31) · ledger verified | — | `make eval-agent` · `make verify-ledger RUN=…` |
 | 2026-09-27 | AWS spend, router ledger (live) vs Cost Explorer (lags) | $7.90 vs $0.72 of the $15 cap | stop at $12 | `GET /stats/overview` |
+
+## Phase 7 final evaluation (2026-09-28, lead; the qa-evaluator run was stopped, so items it would have added are marked "not measured")
+| Area | Metric | Target (plan §10) | Measured | Source / command | Result |
+|---|---|---|---|---|---|
+| Tests | Backend unit/integration | all pass | 928 passed, 1 skipped, 4 deselected (live) | `make test` | ✅ |
+| Tests | UI e2e (Playwright, live API) | all pass | 13 passed, 1 skipped (chaos drill needs a 2nd provider quota) | `cd web && npx playwright test` | ✅ |
+| Classification | stage / type accuracy (100 labels) | ≥ 90% | stage 0.90, type 0.80, scheme 0.96 | `make eval-classify` (P1) | stage ✅ / type ❌ |
+| Extraction | fresh heldout2 (10 unseen pages) | §8 P2 (survey 92, extent 90, owner 85, headers 95) | survey 89.5, extent 79.2, owner 83.3, headers 91.1% | `eval.extraction` (D-055) | ❌ (accepted limitation) |
+| Matching | facts linked; village+survey eval | P ≥ 95% / R ≥ 85% | 82.1% facts linked, eval 50/50 correct | `make match-eval` | recall ❌ / precision sample ✅ |
+| Planet | student vs audited teacher labels | macro-F1 ≥ 0.80 | acc 0.936, macro-F1 0.634 | `make eval-planet` (P3) | ❌ |
+| Proof | PV findings precision (audited sample) | ≥ 80% | not measured in P7 | — | — |
+| Agent | plan validity / tool success / verified-claim rate | ≥ 95 / 90 / 90% | 8/8 (100%) / 15/17 (88%) / 78.5% | `make eval-agent` (P4) | ✅ / ❌ / ❌ |
+| End-to-end | answers vs SQL reference (8 queries incl. unseen + Tamil) | ≥ 85% | 8/8 | `make eval-agent` | ✅ |
+| Robustness | SQL guard (DROP, DELETE, 2 statements, owner table) | 100% refused | 4/4 refused; SELECT allowed; agent_ro denied owner read + finding delete | `app.tools.sql_guard.guard_sql`, psql `set role agent_ro` | ✅ |
+| Robustness | provider outage (chaos gemini:down) | fallback visible | fallback works when a 2nd provider has quota (P6 e2e); skipped today (quota) | e2e agent-console chaos | partial |
+| Efficiency | agent p50 latency | ≤ 25 s | ~50 s median (P4 eval) | `make eval-agent` | ❌ |
+| Efficiency | route comparison routed vs all-proprietary vs all-open | reported | not run (needs a policy switch in the harness) | — | — |
+| Privacy | PII payloads to training-tier models | 0 | **0** of 14,202 PII-tier calls (16,173 total; PII went to Bedrock Ministral 3B/8B and Groq) | `data/router_log.sqlite` (privacy_tier='PII' × models with trains_on_free_tier) | ✅ |
+| New data | 20 unseen document uploads end to end | — | 20/20 completed, 387 parcel links, 806 facts; AI type guess right 11/20 (declare the type) | `scripts/demo_uploads.py verify` (D-066) | ✅ |
+| Packaging | DB dump restore (table-by-table) | identical | 13/13 core tables identical, views + agent_ro OK | scratch-DB restore (D-066) | ✅ |
+| Cloud | read-only demo on Lambda + API Gateway | pages load | all 8 pages + page images (presigned) + 405 on writes; 0 browser errors after the throttle retry | https://lv7b9630q6.execute-api.ap-south-1.amazonaws.com/ | ✅ |
+| Cloud | Bedrock from Lambda (FarmwiseAI's new permission) | ok | ok, Ministral 3B, 167 ms | `GET /health/bedrock` | ✅ |
+| Cost | AWS spend | ≤ $15 own cap (US$100 budget) | Cost Explorer $0.79 (lags ~1 day); router estimate ~$8.0 | `make aws-cost` | ✅ |

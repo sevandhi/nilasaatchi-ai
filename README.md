@@ -6,6 +6,9 @@ NilaSaatchi AI reads Tamil + English land-acquisition documents (notifications, 
 
 Built for the FarmwiseAI Campus Product Challenge (Task 1 multi-model agentic AI, applied to the Task 2 dataset: Allikulam SIPCOT, Thoothukudi).
 
+## Live demo
+**Read-only cloud demo (AWS Lambda + API Gateway, Mumbai):** https://lv7b9630q6.execute-api.ap-south-1.amazonaws.com/. Browse every page, map, parcel and finding. Uploads, the live agent and review actions run in the full local app (`make demo`). The 8-minute walkthrough is in `docs/demo-script.md`.
+
 ## What it does
 - **Paper:** OCR + AI table reading with arithmetic self-checks. Every value keeps its page, box, model and confidence, and uncertain rows go to a human Review queue.
 - **Planet:** per-parcel NDVI/BSI/NDWI time series from Sentinel-2 (2019→2026), seasonal land-use states, and a comparison against never-acquired farmland (difference-in-differences).
@@ -36,7 +39,7 @@ The FarmwiseAI dataset (`Dataset/`, `Documents/`) and derived data (`data/`) are
 
 ## Documentation
 - `plan.md` (architecture and phases), `proposal.md` (business case), `docs/decisions.md` (decision log), `docs/metrics.md` (measured results)
-- `DEMO.md` (run on a new machine), `docs/ui/` (user guide, testing guide, demo test data, report guide), `docs/team/` (team handbook)
+- `docs/demo-script.md` (8-min demo), `DEMO.md` (run on a new machine), `docs/ui/` (user guide, testing guide, demo test data, report guide), `docs/team/` (team handbook)
 
 ## Honest limits
 - Table extraction accuracy on unseen pages: survey number 89.5%, owner 83.3%, extent 79.2%. That is below target, so uncertain rows go to review.

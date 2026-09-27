@@ -96,3 +96,8 @@ Explorer, which lags by hours).
 | Resource | Name / ARN | Created | Deleted | Notes |
 |---|---|---|---|---|
 | S3 bucket | `fai-tce-team49-data` (`arn:aws:s3:::fai-tce-team49-data`) | 2026-09-27 16:37 UTC | — | Private (account default), SSE-S3 AES256 confirmed. Prefix `cloud-demo/`: pages/ (page images), snapshot/ (read-only API data), chips/. User-approved 2026-09-27 |
+| Lambda function | `fai-tce-team49-api` (`arn:aws:lambda:ap-south-1:163887963251:function:fai-tce-team49-api`) | 2026-09-27 18:36 UTC | — | python3.12 zip, role FAI-TCE-LambdaExecutionRole, 1024 MB, timeout 29 s, /tmp 1 GB; env SNAPSHOT_URI/ASSET_BUCKET/ASSET_PREFIX |
+| HTTP API | `fai-tce-team49-api` (id `lv7b9630q6`) | 2026-09-27 18:36 UTC | — | quick-create: $default route -> Lambda proxy, auto-deploy stage; public URL https://lv7b9630q6.execute-api.ap-south-1.amazonaws.com/ |
+
+**Bedrock from Lambda: now working (2026-09-27 18:36 UTC).** After FarmwiseAI enabled Bedrock on `FAI-TCE-LambdaExecutionRole`, `GET /health/bedrock` on the deployed Lambda called `mistral.ministral-3-3b-instruct` via Converse: `{"ok": true, "latency_ms": 167.1, "error": null}`. Lambda concurrency in this account is ~10 (a 30-request burst got 20× HTTP 503), so the UI retries GETs and images on 429/503.
+Teardown: `make cloud-down` (infra/cloud_demo/teardown.sh).

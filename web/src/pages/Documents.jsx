@@ -1,3 +1,4 @@
+import { RetryImg } from "../components/common/RetryImg.jsx";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { DocumentListResponseSchema } from "../api/schemas.js";
@@ -152,7 +153,7 @@ export function Documents() {
                 <button disabled={page >= activeDoc.pages} onClick={() => setPage((p) => p + 1)} className="rounded border px-1.5 disabled:opacity-30">▶</button>
               </div>
             </div>
-            <img src={assetUrl(`/documents/${activeDoc.id}/pages/${page}.webp`)} alt={`page ${page}`} className="max-h-[32rem] w-auto rounded border" />
+            <RetryImg src={assetUrl(`/documents/${activeDoc.id}/pages/${page}.webp`)} alt={`page ${page}`} className="max-h-[32rem] w-auto rounded border" />
             <p className="mt-1 text-[11px] text-gray-400">
               Bounding-box overlays need a specific extraction id — open a page from a parcel&rsquo;s Documents section, or
               append <code>?extraction=&lt;id&gt;</code> to this page&rsquo;s URL.

@@ -39,16 +39,22 @@ export async function apiFetch(path, opts = {}) {
   }
 
   let res;
-  try {
-    res = await fetch(url, {
-      method,
-      signal,
-      headers: body ? { "Content-Type": "application/json" } : undefined,
-      body: body ? JSON.stringify(body) : undefined,
-    });
-  } catch (e) {
-    if (e?.name === "AbortError") throw e;
-    return { ok: false, kind: "network", message: `Cannot reach the server. Please check that the backend is running and try again.` };
+  // GETs are retried briefly on 429/503: the cloud demo's Lambda has a small concurrency limit,
+  // so a page's first burst of parallel requests can be throttled for a moment.
+  for (let attempt = 0; ; attempt++) {
+    try {
+      res = await fetch(url, {
+        method,
+        signal,
+        headers: body ? { "Content-Type": "application/json" } : undefined,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    } catch (e) {
+      if (e?.name === "AbortError") throw e;
+      return { ok: false, kind: "network", message: `Cannot reach the server. Please check that the backend is running and try again.` };
+    }
+    if (method !== "GET" || (res.status !== 429 && res.status !== 503) || attempt >= 2) break;
+    await new Promise((r) => setTimeout(r, 400 * (attempt + 1) + Math.random() * 300));
   }
 
   let json = null;
