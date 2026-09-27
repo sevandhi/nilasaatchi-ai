@@ -1,0 +1,21 @@
+page_id,doc_type_hint,source_pdf,page_no
+g01,GO,Dataset/Land_documents/Government Order (GO)/GO.pdf,1
+g02,AS,Dataset/Land_documents/Administrative Sanction (AS)/AS.pdf,2
+g03,LPS,Dataset/Land_documents/Land Plan Schedule (LPS)/LPS.pdf,1
+g04,AWARD_7_2,Dataset/Land_documents/LA_Patta_land_Documents/7(2) Award/2BLOCK1.pdf,2
+g05,AWARD_7_2,Dataset/Land_documents/LA_Patta_land_Documents/7(2) Award/2BLOCK1.pdf,3
+g06,AWARD_7_2,Dataset/Land_documents/LA_Patta_land_Documents/7(2) Awarded/2awardblock1.pdf,2
+g07,AWARD_7_3,Dataset/Land_documents/LA_Patta_land_Documents/7(3) Awarded/7_3_B_1.pdf,4
+g08,AWARD_7_3,Dataset/Land_documents/LA_Patta_land_Documents/7(3) Awarded/7_3_B_5.pdf,5
+g09,FORM_F,Dataset/Land_documents/LA_Patta_land_Documents/Form F/10.pdf,2
+g10,FORM_F,Dataset/Land_documents/LA_Patta_land_Documents/Form F/1.pdf,2
+g11,FORM_E,Dataset/Land_documents/LA_Patta_land_Documents/Form E/10.pdf,1
+g12,FORM_E,Dataset/Land_documents/LA_Patta_land_Documents/Form E/11.pdf,1
+g13,SEC32_NOTICE,Dataset/Land_documents/LA_Patta_land_Documents/3(2) Notice/31papernoticeb1.pdf,1
+g14,SEC32_ERRATA,Dataset/Land_documents/LA_Patta_land_Documents/3(2) Errata/B5errata.pdf,1
+g15,DISBURSEMENT,Dataset/Land_documents/LA_Patta_land_Documents/Amount Disbursed 7(2) & 7(3)/7_2__Award_Block_1_1_.pdf,3
+g16,DISBURSEMENT,Dataset/Land_documents/LA_Patta_land_Documents/Amount Disbursed/1023687.pdf,1
+g17,POSSESSION_CERT,Dataset/Land_documents/LA_Patta_land_Documents/Possession Taken/Block_2_21.pdf,1
+g18,LDR,Dataset/Land_documents/LA_Patta_land_Documents/LDR Issued/B_1.pdf,1
+g19,CHITTA,Dataset/Land_documents/LA_Patta_land_Documents/Patta Transferred/1663 (2).pdf,2
+g20,DLPNC,Dataset/Land_documents/LA_Patta_land_Documents/DLPNC/DLPNC (10).pdf,1

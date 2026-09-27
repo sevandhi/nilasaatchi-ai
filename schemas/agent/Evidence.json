@@ -1,0 +1,79 @@
+{
+ "additionalProperties": false,
+ "properties": {
+  "bbox": {
+   "anyOf": [
+    {
+     "items": {
+      "type": "number"
+     },
+     "type": "array"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Bbox"
+  },
+  "document_id": {
+   "anyOf": [
+    {
+     "type": "integer"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Document Id"
+  },
+  "excerpt": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Excerpt"
+  },
+  "kind": {
+   "enum": [
+    "page_bbox",
+    "sql",
+    "layer_feature",
+    "raster",
+    "satellite_chip",
+    "timeseries",
+    "document"
+   ],
+   "title": "Kind",
+   "type": "string"
+  },
+  "page": {
+   "anyOf": [
+    {
+     "type": "integer"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Page"
+  },
+  "ref": {
+   "title": "Ref",
+   "type": "string"
+  }
+ },
+ "required": [
+  "kind",
+  "ref"
+ ],
+ "title": "Evidence",
+ "type": "object"
+}

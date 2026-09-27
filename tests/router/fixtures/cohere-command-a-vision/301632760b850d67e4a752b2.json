@@ -1,0 +1,23 @@
+{
+ "key": "301632760b850d67e4a752b21c21e6115491ac879d8e03d2b835890bf637ecfb",
+ "kind": "chat",
+ "latency_ms": 1354,
+ "model_id": "cohere-command-a-vision",
+ "model_name": "command-a-vision-07-2025",
+ "response": {
+  "data": null,
+  "headers": {
+   "x-endpoint-monthly-call-limit": "1000",
+   "x-trial-endpoint-call-limit": "20",
+   "x-trial-endpoint-call-remaining": "19"
+  },
+  "image_tokens": 259,
+  "json_mode_used": "json_object",
+  "latency_ms": 1354,
+  "pages": 0,
+  "resolved_model": "command-a-vision-07-2025",
+  "text": "{\"color\": \"green\"}",
+  "tokens_in": 884,
+  "tokens_out": 7
+ }
+}

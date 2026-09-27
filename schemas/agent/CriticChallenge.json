@@ -1,0 +1,85 @@
+{
+ "$defs": {
+  "CriticCheck": {
+   "additionalProperties": false,
+   "properties": {
+    "args": {
+     "additionalProperties": true,
+     "title": "Args",
+     "type": "object"
+    },
+    "tool": {
+     "title": "Tool",
+     "type": "string"
+    }
+   },
+   "required": [
+    "tool"
+   ],
+   "title": "CriticCheck",
+   "type": "object"
+  }
+ },
+ "additionalProperties": false,
+ "properties": {
+  "check": {
+   "$ref": "#/$defs/CriticCheck"
+  },
+  "claim_id": {
+   "title": "Claim Id",
+   "type": "string"
+  },
+  "hypothesis": {
+   "title": "Hypothesis",
+   "type": "string"
+  },
+  "model_id": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Model Id"
+  },
+  "producer_vendor": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Producer Vendor"
+  },
+  "result": {
+   "additionalProperties": true,
+   "title": "Result",
+   "type": "object"
+  },
+  "vendor": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Vendor"
+  }
+ },
+ "required": [
+  "claim_id",
+  "hypothesis",
+  "check"
+ ],
+ "title": "CriticChallenge",
+ "type": "object"
+}

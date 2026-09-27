@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nilasaatchi.local/schemas/extraction/header_field.json",
+  "title": "HeaderField",
+  "type": "object",
+  "properties": {
+    "value": {"type": ["string", "null"]},
+    "precision": {"type": ["string", "null"], "enum": ["day", "month", "year", null]},
+    "raw": {"type": ["string", "null"]},
+    "source": {"type": ["string", "null"], "description": "text_layer | tesseract | vlm | carried (from an earlier page of the same document)"},
+    "votes": {"type": "object"},
+    "conflict": {"type": "boolean"},
+    "evidence": {"$ref": "evidence.json"}
+  },
+  "required": ["value"]
+}

@@ -1,0 +1,19 @@
+{
+ "additionalProperties": false,
+ "properties": {
+  "explanation": {
+   "default": "",
+   "title": "Explanation",
+   "type": "string"
+  },
+  "sql": {
+   "title": "Sql",
+   "type": "string"
+  }
+ },
+ "required": [
+  "sql"
+ ],
+ "title": "SqlOutput",
+ "type": "object"
+}

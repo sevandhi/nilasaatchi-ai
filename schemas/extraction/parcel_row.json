@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nilasaatchi.local/schemas/extraction/parcel_row.json",
+  "title": "ParcelRow",
+  "description": "Base row for every table whose rows are land parcels (awards, notices, errata, LDR, chitta, Form E). Type-specific schemas add required fields.",
+  "type": "object",
+  "properties": {
+    "record_type": {
+      "const": "parcel_row"
+    },
+    "serial": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "village": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "survey_no": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sub_div": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "part": {
+      "type": "boolean"
+    },
+    "extent_ha": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "extent_ac": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "cents": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "patta_no": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "owner_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "owners": {
+      "type": "array",
+      "items": {
+        "$ref": "owner.json"
+      }
+    },
+    "classification": {
+      "enum": [
+        "DRY",
+        "WET",
+        "PORAMBOKE",
+        "OTHER",
+        null
+      ]
+    },
+    "classification_raw": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "amount_rs": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "plot_no": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "trees": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "buildings": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "boundaries": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "north": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "east": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "south": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "west": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "assessment_rs": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "remarks": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "well_marker": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "table_role": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "e.g. parcel | compensation | published_as | should_read_as | already_paid_7_2"
+    },
+    "handover_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "filled_down": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "raw": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "evidence": {
+      "$ref": "evidence.json"
+    },
+    "owner_read_status": {
+      "type": "string",
+      "enum": [
+        "vlm_agreed",
+        "vlm_single"
+      ],
+      "description": "D-032: vlm_agreed only when two independent reads agree (token_sort >= 90)"
+    },
+    "owner_confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "capped at 0.8 when owner_read_status = vlm_single"
+    },
+    "owner_other_read": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "the disagreeing second read, for review"
+    }
+  },
+  "required": [
+    "record_type",
+    "evidence"
+  ]
+}

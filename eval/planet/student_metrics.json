@@ -1,0 +1,200 @@
+{
+ "model_version": "landuse_lgbm_v1",
+ "n_train": 250,
+ "classes": [
+  "cropped",
+  "irrigated_multi",
+  "perennial_veg",
+  "bare_fallow"
+ ],
+ "class_counts": {
+  "bare_fallow": 145,
+  "cropped": 88,
+  "perennial_veg": 12,
+  "irrigated_multi": 5
+ },
+ "lovo_macro_f1": 0.6340948169982805,
+ "lovo_accuracy": 0.936,
+ "lovo_macro_f1_calibrated_argmax": 0.6024230399230399,
+ "prior_rules_macro_f1_same_rows": 0.5878203643662189,
+ "prior_rules_accuracy_same_rows": 0.788,
+ "brier_raw": 0.10458982948255877,
+ "brier_calibrated_crossfit": 0.1149699784522422,
+ "ece_raw": 0.03710345440257882,
+ "ece_calibrated_crossfit": 0.027888077834707422,
+ "accept_rate_at_tau": 0.92,
+ "accuracy_when_accepted": 0.9608695652173913,
+ "per_class": [
+  {
+   "class": "cropped",
+   "precision": 0.966,
+   "recall": 0.977,
+   "f1": 0.972,
+   "support": 88
+  },
+  {
+   "class": "irrigated_multi",
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "support": 5
+  },
+  {
+   "class": "perennial_veg",
+   "precision": 0.636,
+   "recall": 0.583,
+   "f1": 0.609,
+   "support": 12
+  },
+  {
+   "class": "bare_fallow",
+   "precision": 0.94,
+   "recall": 0.972,
+   "f1": 0.956,
+   "support": 145
+  }
+ ],
+ "confusion": {
+  "labels": [
+   "cropped",
+   "irrigated_multi",
+   "perennial_veg",
+   "bare_fallow"
+  ],
+  "matrix": [
+   [
+    86,
+    0,
+    1,
+    1
+   ],
+   [
+    1,
+    0,
+    1,
+    3
+   ],
+   [
+    0,
+    0,
+    7,
+    5
+   ],
+   [
+    2,
+    0,
+    2,
+    141
+   ]
+  ]
+ },
+ "folds": [
+  {
+   "village": "Allikulam",
+   "n": 60,
+   "acc": 0.883,
+   "macro_f1": 0.634
+  },
+  {
+   "village": "Keelathattaparai",
+   "n": 40,
+   "acc": 0.975,
+   "macro_f1": 0.66
+  },
+  {
+   "village": "Melathattaparai",
+   "n": 45,
+   "acc": 0.933,
+   "macro_f1": 0.804
+  },
+  {
+   "village": "Peroorani",
+   "n": 39,
+   "acc": 0.923,
+   "macro_f1": 0.641
+  },
+  {
+   "village": "Ramasamypuram",
+   "n": 28,
+   "acc": 0.929,
+   "macro_f1": 0.971
+  },
+  {
+   "village": "South Silukanpatti",
+   "n": 11,
+   "acc": 1.0,
+   "macro_f1": 1.0
+  },
+  {
+   "village": "Umarikottai",
+   "n": 27,
+   "acc": 1.0,
+   "macro_f1": 1.0
+  }
+ ],
+ "params": {
+  "objective": "multiclass",
+  "learning_rate": 0.05,
+  "num_leaves": 15,
+  "min_data_in_leaf": 8,
+  "feature_fraction": 0.8,
+  "bagging_fraction": 0.8,
+  "bagging_freq": 1,
+  "lambda_l2": 1.0,
+  "verbose": -1,
+  "seed": 7,
+  "num_threads": 4
+ },
+ "num_rounds": 200,
+ "features": [
+  "ndvi_max",
+  "ndvi_min",
+  "amplitude",
+  "ndvi_mean",
+  "dry_mean",
+  "bsi_dry_mean",
+  "ndwi_max",
+  "peak_doy",
+  "integral",
+  "peaks_count",
+  "n_obs",
+  "max_gap_days",
+  "yoy_delta",
+  "yoy_delta_integral",
+  "nbr_amp_med_300m",
+  "low_support_frac",
+  "ann_amplitude",
+  "ann_dry_mean",
+  "ann_peaks_count",
+  "ann_ndvi_min",
+  "ann_integral",
+  "season_code",
+  "amp_minus_nbr",
+  "mixed",
+  "frac_tree",
+  "frac_shrub",
+  "frac_grass",
+  "frac_cropland",
+  "frac_built",
+  "frac_water"
+ ],
+ "tau_accept": 0.75,
+ "note": "OOF = leave-one-village-out; audit set excluded; hyper-parameters fixed a priori (not tuned)",
+ "feature_importance_gain": {
+  "nbr_amp_med_300m": 763.9,
+  "integral": 548.8,
+  "ndwi_max": 468.3,
+  "ann_dry_mean": 350.1,
+  "ndvi_max": 238.2,
+  "amplitude": 191.1,
+  "ndvi_min": 134.6,
+  "ndvi_mean": 122.9,
+  "ann_amplitude": 116.4,
+  "peak_doy": 96.2,
+  "amp_minus_nbr": 86.0,
+  "yoy_delta_integral": 81.2,
+  "peaks_count": 77.1,
+  "frac_cropland": 68.2,
+  "ann_ndvi_min": 68.1
+ }
+}

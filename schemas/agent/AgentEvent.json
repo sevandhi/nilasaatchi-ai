@@ -1,0 +1,53 @@
+{
+ "additionalProperties": false,
+ "properties": {
+  "data": {
+   "additionalProperties": true,
+   "title": "Data",
+   "type": "object"
+  },
+  "node": {
+   "title": "Node",
+   "type": "string"
+  },
+  "run_id": {
+   "title": "Run Id",
+   "type": "string"
+  },
+  "seq": {
+   "title": "Seq",
+   "type": "integer"
+  },
+  "ts": {
+   "title": "Ts",
+   "type": "string"
+  },
+  "type": {
+   "enum": [
+    "plan",
+    "step_start",
+    "step_end",
+    "verify",
+    "critic",
+    "judge",
+    "fallback",
+    "clarify",
+    "result",
+    "error",
+    "ledger",
+    "status"
+   ],
+   "title": "Type",
+   "type": "string"
+  }
+ },
+ "required": [
+  "type",
+  "run_id",
+  "seq",
+  "ts",
+  "node"
+ ],
+ "title": "AgentEvent",
+ "type": "object"
+}

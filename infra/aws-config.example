@@ -1,0 +1,19 @@
+
+[sso-session fai-tce]
+sso_start_url = https://d-9f67598e80.awsapps.com/start
+sso_region = ap-south-1
+sso_registration_scopes = sso:account:access
+
+[profile fai-builder]
+sso_session = fai-tce
+sso_account_id = 163887963251
+sso_role_name = FAI-TCE-Builder-AI
+region = ap-south-1
+output = json
+
+[profile fai-cost]
+sso_session = fai-tce
+sso_account_id = 163887963251
+sso_role_name = FAI-TCE-Cost-Viewer
+region = ap-south-1
+output = json

@@ -1,0 +1,19 @@
+{
+ "key": "095976c511d93b97ee812cd32661560cf334565c6df88cee8a69f3eab70320ed",
+ "kind": "chat",
+ "latency_ms": 10425,
+ "model_id": "gemini-flash-lite",
+ "model_name": "gemini-3.5-flash-lite",
+ "response": {
+  "data": null,
+  "headers": {},
+  "image_tokens": 0,
+  "json_mode_used": "json_schema",
+  "latency_ms": 10425,
+  "pages": 0,
+  "resolved_model": "gemini-3.5-flash-lite",
+  "text": "{\"en\": \"The evidence pack for Melathattaparai 233 contains 5 paper facts, 7 events, and 89 observations. A total of 70 findings were recorded, including 2 EXTENT_MISMATCH, 1 COMPENSATION_MISMATCH, 4 PV1_CLASSIFICATION_CONFLICT, 3 PV3_POST_POSSESSION_ACTIVITY, 24 PV4_IDLE_LAND_BANK, 34 STALLED, 1 STAGE_ORDER_VIOLATION, and 1 EXEMPTION_CONFLICT. Additionally, there are 84 observations and 24 parcel-seasons for 1 parcels.\", \"claim_refs\": [], \"ta\": null}",
+  "tokens_in": 276,
+  "tokens_out": 152
+ }
+}

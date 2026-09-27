@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nilasaatchi.local/schemas/extraction/evidence.json",
+  "title": "Evidence",
+  "description": "Provenance carried by every extracted row or header field. bbox is a page fraction [x0,y0,x1,y1] (0..1, origin top-left).",
+  "type": "object",
+  "properties": {
+    "doc_id": {"type": ["integer", "string", "null"]},
+    "page": {"type": ["integer", "null"]},
+    "bbox": {"type": "array", "items": {"type": "number", "minimum": 0, "maximum": 1}, "minItems": 4, "maxItems": 4},
+    "bbox_method": {"enum": ["grid_row", "grid_table", "ocr_line", "page"]},
+    "row_index": {"type": ["integer", "null"]},
+    "table_index": {"type": ["integer", "null"]},
+    "source_engine": {"type": "string"},
+    "model_id": {"type": ["string", "null"]},
+    "privacy_tier": {"enum": ["PII", "PSEUDO", "PUBLIC"]},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "raw_cells": {"type": "array", "items": {"type": ["string", "null"]}},
+    "raw_text": {"type": ["string", "null"]}
+  },
+  "required": ["bbox", "bbox_method", "source_engine", "confidence"]
+}

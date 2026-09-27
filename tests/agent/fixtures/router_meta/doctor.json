@@ -1,0 +1,641 @@
+{
+  "generated_at": "2026-09-26T18:47:19+00:00",
+  "router_mode": "live",
+  "tools": [
+    {
+      "name": "python",
+      "status": "OK",
+      "version": "3.12.14",
+      "detail": "/home/user/farmwiseAi/.venv/bin/python"
+    },
+    {
+      "name": "uv",
+      "status": "OK",
+      "version": "uv 0.12.19 (x86_64-unknown-linux-gnu)",
+      "detail": null
+    },
+    {
+      "name": "docker",
+      "status": "OK",
+      "version": "Docker version 29.1.3, build 29.1.3-0ubuntu4.1",
+      "detail": null
+    },
+    {
+      "name": "node",
+      "status": "OK",
+      "version": "v24.21.0",
+      "detail": null
+    },
+    {
+      "name": "paddle",
+      "status": "OK",
+      "version": "paddle 3.3.1, paddleocr 3.7.0",
+      "detail": null
+    },
+    {
+      "name": "tesseract",
+      "status": "OK",
+      "version": "tesseract 5.3.4",
+      "detail": "docker image nilasaatchi-ocr-tools; tam=True"
+    },
+    {
+      "name": "gdal",
+      "status": "OK",
+      "version": "GDAL 3.12.4",
+      "detail": "via rasterio 1.5.1"
+    }
+  ],
+  "db": {
+    "status": "OK",
+    "server_version": "16.15 (Debian 16.15-1.pgdg11+2)",
+    "extensions": {
+      "plpgsql": "1.0",
+      "postgis": "3.4.3",
+      "vector": "0.8.6",
+      "pg_trgm": "1.6",
+      "postgis_topology": "3.4.3",
+      "fuzzystrmatch": "1.2",
+      "postgis_tiger_geocoder": "3.4.3"
+    },
+    "detail": "postgis 3.4.3, vector 0.8.6",
+    "url": "postgresql://nila:***@localhost:5439/nilasaatchi"
+  },
+  "models": [
+    {
+      "id": "gemini-flash-lite",
+      "provider": "gemini",
+      "vendor": "google",
+      "registry_model": "gemini-3.5-flash-lite",
+      "fallback_model": "gemini-3.1-flash-lite",
+      "trains_on_free_tier_resolved": true,
+      "status": "OK",
+      "latency_ms": 6172,
+      "resolved_model": "gemini-3.5-flash-lite",
+      "resolved_model_name": "gemini-3.5-flash-lite",
+      "rate_limit_headers": {},
+      "error": null,
+      "error_kind": null,
+      "checks": {
+        "answer_ok": true,
+        "vision_color": "red",
+        "vision_ok": true
+      },
+      "suggestions": [],
+      "attempts": [
+        {
+          "outcome": "ok",
+          "model_name": "gemini-3.5-flash-lite",
+          "error_kind": null,
+          "status": null,
+          "latency_ms": 6172
+        }
+      ],
+      "tokens_in": 1203,
+      "tokens_out": 26,
+      "json_mode_used": "json_schema",
+      "shadow_cost_usd": 0.0001307
+    },
+    {
+      "id": "gemini-flash-lite-31",
+      "provider": "gemini",
+      "vendor": "google",
+      "registry_model": "gemini-3.1-flash-lite",
+      "fallback_model": null,
+      "trains_on_free_tier_resolved": true,
+      "status": "OK",
+      "latency_ms": 5499,
+      "resolved_model": "gemini-3.1-flash-lite",
+      "resolved_model_name": "gemini-3.1-flash-lite",
+      "rate_limit_headers": {},
+      "error": null,
+      "error_kind": null,
+      "checks": {
+        "answer_ok": true,
+        "vision_expected": "red",
+        "vision_color": "red",
+        "vision_ok": true,
+        "tokens_in_with_image": 1213,
+        "tokens_in_control": 124,
+        "vision_tokens_ok": true
+      },
+      "suggestions": [],
+      "attempts": [
+        {
+          "outcome": "ok",
+          "model_name": "gemini-3.1-flash-lite",
+          "error_kind": null,
+          "status": null,
+          "latency_ms": 5499
+        }
+      ],
+      "tokens_in": 1213,
+      "tokens_out": 17,
+      "json_mode_used": "json_schema",
+      "shadow_cost_usd": 0.0001281
+    },
+    {
+      "id": "gemini-flash",
+      "provider": "gemini",
+      "vendor": "google",
+      "registry_model": "gemini-3.8-flash",
+      "fallback_model": null,
+      "trains_on_free_tier_resolved": true,
+      "status": "OK",
+      "latency_ms": 8687,
+      "resolved_model": "gemini-3.8-flash",
+      "resolved_model_name": "gemini-3.8-flash",
+      "rate_limit_headers": {},
+      "error": null,
+      "error_kind": null,
+      "checks": {
+        "answer_ok": true,
+        "vision_color": "red",
+        "vision_ok": true
+      },
+      "suggestions": [],
+      "attempts": [
+        {
+          "outcome": "ok",
+          "model_name": "gemini-3.8-flash",
+          "error_kind": null,
+          "status": null,
+          "latency_ms": 8687
+        }
+      ],
+      "tokens_in": 1203,
+      "tokens_out": 133,
+      "json_mode_used": "json_schema",
+      "shadow_cost_usd": 0.0006934
+    },
+    {
+      "id": "groq-qwen-vl",
+      "provider": "groq",
+      "vendor": "alibaba-open",
+      "registry_model": "qwen/qwen3.8-27b",
+      "fallback_model": null,
+      "trains_on_free_tier_resolved": false,
+      "status": "OK",
+      "latency_ms": 792,
+      "resolved_model": "qwen/qwen3.8-27b",
+      "resolved_model_name": "qwen/qwen3.8-27b",
+      "rate_limit_headers": {
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-limit-tokens": "8000",
+        "x-ratelimit-remaining-requests": "996",
+        "x-ratelimit-remaining-tokens": "5321",
+        "x-ratelimit-reset-requests": "5m45.6s",
+        "x-ratelimit-reset-tokens": "20.092s"
+      },
+      "error": null,
+      "error_kind": null,
+      "checks": {
+        "answer_ok": true,
+        "vision_color": "red",
+        "vision_ok": true
+      },
+      "suggestions": [],
+      "attempts": [
+        {
+          "outcome": "ok",
+          "model_name": "qwen/qwen3.8-27b",
+          "error_kind": null,
+          "status": null,
+          "latency_ms": 792
+        }
+      ],
+      "tokens_in": 1411,
+      "tokens_out": 18,
+      "json_mode_used": "json_schema",
+      "shadow_cost_usd": 0.00041981
+    },
+    {
+      "id": "groq-gpt-oss",
+      "provider": "groq",
+      "vendor": "openai-open",
+      "registry_model": "openai/gpt-oss-120b",
+      "fallback_model": null,
+      "trains_on_free_tier_resolved": false,
+      "status": "OK",
+      "latency_ms": 1040,
+      "resolved_model": "openai/gpt-oss-120b",
+      "resolved_model_name": "openai/gpt-oss-120b",
+      "rate_limit_headers": {
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-limit-tokens": "8000",
+        "x-ratelimit-remaining-requests": "999",
+        "x-ratelimit-remaining-tokens": "7374",
+        "x-ratelimit-reset-requests": "1m26.4s",
+        "x-ratelimit-reset-tokens": "4.695s"
+      },
+      "error": null,
+      "error_kind": null,
+      "checks": {
+        "answer_ok": true
+      },
+      "suggestions": [],
+      "attempts": [
+        {
+          "outcome": "ok",
+          "model_name": "openai/gpt-oss-120b",
+          "error_kind": null,
+          "status": null,
+          "latency_ms": 1040
+        }
+      ],
+      "tokens_in": 252,
+      "tokens_out": 86,
+      "json_mode_used": "json_schema",
+      "shadow_cost_usd": 0.0001023
+    },
+    {
+      "id": "cohere-command-a",
+      "provider": "cohere",
+      "vendor": "cohere",
+      "registry_model": "command-a-03-2025",
+      "fallback_model": null,
+      "trains_on_free_tier_resolved": true,
+      "status": "OK",
+      "latency_ms": 1187,
+      "resolved_model": "command-a-03-2025",
+      "resolved_model_name": "command-a-03-2025",
+      "rate_limit_headers": {},
+      "error": null,
+      "error_kind": null,
+      "checks": {
+        "answer_ok": true
+      },
+      "suggestions": [],
+      "attempts": [
+        {
+          "outcome": "ok",
+          "model_name": "command-a-03-2025",
+          "error_kind": null,
+          "status": null,
+          "latency_ms": 1187
+        }
+      ],
+      "tokens_in": 613,
+      "tokens_out": 14,
+      "json_mode_used": "json_object",
+      "shadow_cost_usd": 0.0016725
+    },
+    {
+      "id": "cohere-command-a-vision",
+      "provider": "cohere",
+      "vendor": "cohere",
+      "registry_model": "command-a-vision-07-2025",
+      "fallback_model": null,
+      "trains_on_free_tier_resolved": true,
+      "status": "OK",
+      "latency_ms": 1363,
+      "resolved_model": "command-a-vision-07-2025",
+      "resolved_model_name": "command-a-vision-07-2025",
+      "rate_limit_headers": {
+        "x-endpoint-monthly-call-limit": "1000",
+        "x-trial-endpoint-call-limit": "20",
+        "x-trial-endpoint-call-remaining": "8"
+      },
+      "error": null,
+      "error_kind": null,
+      "checks": {
+        "answer_ok": true,
+        "vision_expected": "green",
+        "vision_color": "green",
+        "vision_ok": true,
+        "image_tokens": 259,
+        "tokens_in_with_image": 942,
+        "tokens_in_control": 682,
+        "vision_tokens_ok": true
+      },
+      "suggestions": [],
+      "attempts": [
+        {
+          "outcome": "ok",
+          "model_name": "command-a-vision-07-2025",
+          "error_kind": null,
+          "status": null,
+          "latency_ms": 1363
+        }
+      ],
+      "tokens_in": 942,
+      "tokens_out": 18,
+      "json_mode_used": "json_object",
+      "shadow_cost_usd": 0.002535
+    },
+    {
+      "id": "local-qwen",
+      "provider": "ollama",
+      "vendor": "local",
+      "registry_model": "qwen3.5:4b",
+      "fallback_model": null,
+      "trains_on_free_tier_resolved": false,
+      "status": "SKIPPED",
+      "latency_ms": null,
+      "resolved_model": null,
+      "resolved_model_name": null,
+      "rate_limit_headers": {},
+      "error": "ollama not reachable at localhost:11434",
+      "error_kind": null,
+      "checks": {},
+      "suggestions": []
+    },
+    {
+      "id": "bedrock-ministral-8b",
+      "provider": "bedrock",
+      "vendor": "mistral-open",
+      "registry_model": "mistral.ministral-3-8b-instruct",
+      "fallback_model": null,
+      "trains_on_free_tier_resolved": false,
+      "status": "OK",
+      "latency_ms": 2223,
+      "resolved_model": "mistral.ministral-3-8b-instruct",
+      "resolved_model_name": "mistral.ministral-3-8b-instruct",
+      "rate_limit_headers": {
+        "bedrock-latency-ms": "255"
+      },
+      "error": null,
+      "error_kind": null,
+      "checks": {
+        "answer_ok": true,
+        "vision_expected": "blue",
+        "vision_color": "blue",
+        "vision_ok": true,
+        "tokens_in_with_image": 238,
+        "tokens_in_control": 128,
+        "vision_tokens_ok": true
+      },
+      "suggestions": [],
+      "attempts": [
+        {
+          "outcome": "ok",
+          "model_name": "mistral.ministral-3-8b-instruct",
+          "error_kind": null,
+          "status": null,
+          "latency_ms": 2223
+        }
+      ],
+      "tokens_in": 238,
+      "tokens_out": 27,
+      "json_mode_used": "prompt",
+      "shadow_cost_usd": 3.975e-05
+    },
+    {
+      "id": "bedrock-ministral-3b",
+      "provider": "bedrock",
+      "vendor": "mistral-open",
+      "registry_model": "mistral.ministral-3-3b-instruct",
+      "fallback_model": null,
+      "trains_on_free_tier_resolved": false,
+      "status": "OK",
+      "latency_ms": 306,
+      "resolved_model": "mistral.ministral-3-3b-instruct",
+      "resolved_model_name": "mistral.ministral-3-3b-instruct",
+      "rate_limit_headers": {
+        "bedrock-latency-ms": "220"
+      },
+      "error": null,
+      "error_kind": null,
+      "checks": {
+        "answer_ok": true,
+        "vision_color": "red",
+        "vision_ok": true
+      },
+      "suggestions": [],
+      "attempts": [
+        {
+          "outcome": "ok",
+          "model_name": "mistral.ministral-3-3b-instruct",
+          "error_kind": null,
+          "status": null,
+          "latency_ms": 306
+        }
+      ],
+      "tokens_in": 120,
+      "tokens_out": 27,
+      "json_mode_used": "prompt",
+      "shadow_cost_usd": 1.47e-05
+    }
+  ],
+  "embeddings": [
+    {
+      "id": "titan-embed-text-v2",
+      "model": "amazon.titan-embed-text-v2:0",
+      "kind": "text",
+      "status": "OK",
+      "dims": 1024,
+      "latency_ms": 1659,
+      "tokens_in": 14,
+      "cost_usd": 2.8e-07,
+      "error": null
+    },
+    {
+      "id": "titan-embed-image-v1",
+      "model": "amazon.titan-embed-image-v1",
+      "kind": "image",
+      "status": "SKIPPED",
+      "dims": null,
+      "latency_ms": null,
+      "tokens_in": null,
+      "cost_usd": null,
+      "error": "not probed (text embedding probe only)"
+    },
+    {
+      "id": "bge-m3",
+      "model": "BAAI/bge-m3",
+      "kind": "text",
+      "status": "SKIPPED",
+      "dims": null,
+      "latency_ms": null,
+      "tokens_in": null,
+      "cost_usd": null,
+      "error": "local model (stub; FlagEmbedding not installed)"
+    }
+  ],
+  "aws_spend": {
+    "estimate_usd": 0.31055,
+    "cap_usd": 15.0,
+    "threshold": 0.8,
+    "source": "cost_explorer+local",
+    "ok": true,
+    "ce_error": null
+  },
+  "chains": [
+    {
+      "task": "plan",
+      "typical_tier": "PSEUDO",
+      "ok_models": [
+        "gemini-flash-lite",
+        "gemini-flash (when hard_replan)",
+        "groq-qwen-vl"
+      ],
+      "status": "OK",
+      "notes": [
+        "local-qwen: SKIPPED"
+      ],
+      "terminal": "clarify_user"
+    },
+    {
+      "task": "sql",
+      "typical_tier": "PII",
+      "ok_models": [
+        "groq-qwen-vl",
+        "groq-gpt-oss",
+        "bedrock-ministral-8b"
+      ],
+      "status": "OK",
+      "notes": [
+        "local-qwen: SKIPPED"
+      ],
+      "terminal": "template_or_clarify"
+    },
+    {
+      "task": "tool_args",
+      "typical_tier": "PII",
+      "ok_models": [
+        "groq-qwen-vl",
+        "groq-gpt-oss",
+        "bedrock-ministral-8b"
+      ],
+      "status": "OK",
+      "notes": [
+        "local-qwen: SKIPPED"
+      ],
+      "terminal": "template_or_clarify"
+    },
+    {
+      "task": "json_repair",
+      "typical_tier": "PII",
+      "ok_models": [
+        "groq-qwen-vl",
+        "groq-gpt-oss",
+        "bedrock-ministral-8b"
+      ],
+      "status": "OK",
+      "notes": [
+        "local-qwen: SKIPPED"
+      ],
+      "terminal": "template_or_clarify"
+    },
+    {
+      "task": "table_read_pii",
+      "typical_tier": "PII",
+      "ok_models": [
+        "bedrock-ministral-8b",
+        "groq-qwen-vl"
+      ],
+      "status": "OK",
+      "notes": [],
+      "terminal": "review_queue"
+    },
+    {
+      "task": "table_second_read_pii",
+      "typical_tier": "PII",
+      "ok_models": [
+        "bedrock-ministral-8b",
+        "groq-qwen-vl"
+      ],
+      "status": "OK",
+      "notes": [],
+      "terminal": "review_queue"
+    },
+    {
+      "task": "cell_reread",
+      "typical_tier": "PII",
+      "ok_models": [
+        "bedrock-ministral-8b",
+        "groq-qwen-vl"
+      ],
+      "status": "OK",
+      "notes": [],
+      "terminal": "review_queue"
+    },
+    {
+      "task": "critic",
+      "typical_tier": "PSEUDO",
+      "ok_models": [
+        "gemini-flash-lite",
+        "groq-qwen-vl",
+        "cohere-command-a"
+      ],
+      "status": "OK",
+      "notes": [],
+      "terminal": "deterministic_only"
+    },
+    {
+      "task": "judge",
+      "typical_tier": "PSEUDO",
+      "ok_models": [
+        "gemini-flash-lite",
+        "cohere-command-a"
+      ],
+      "status": "OK",
+      "notes": [],
+      "terminal": "deterministic_only_downgrade"
+    },
+    {
+      "task": "present",
+      "typical_tier": "PSEUDO",
+      "ok_models": [
+        "gemini-flash-lite",
+        "groq-qwen-vl"
+      ],
+      "status": "OK",
+      "notes": [],
+      "terminal": "template_narrative"
+    },
+    {
+      "task": "satellite_teacher",
+      "typical_tier": "PUBLIC",
+      "ok_models": [
+        "gemini-flash-lite-31",
+        "cohere-command-a-vision",
+        "groq-qwen-vl"
+      ],
+      "status": "OK",
+      "notes": [],
+      "terminal": "field_verification_queue"
+    },
+    {
+      "task": "satellite_second_opinion",
+      "typical_tier": "PUBLIC",
+      "ok_models": [
+        "cohere-command-a-vision",
+        "groq-qwen-vl",
+        "gemini-flash-lite-31"
+      ],
+      "status": "OK",
+      "notes": [],
+      "terminal": "field_verification_queue"
+    },
+    {
+      "task": "classify_page",
+      "typical_tier": "PII",
+      "ok_models": [
+        "bedrock-ministral-8b",
+        "groq-qwen-vl"
+      ],
+      "status": "OK",
+      "notes": [],
+      "terminal": "review_queue"
+    },
+    {
+      "task": "classify_text",
+      "typical_tier": "PII",
+      "ok_models": [
+        "bedrock-ministral-3b",
+        "groq-gpt-oss"
+      ],
+      "status": "OK",
+      "notes": [
+        "local-qwen: SKIPPED"
+      ],
+      "terminal": "review_queue"
+    }
+  ],
+  "mistral_training_optout": {
+    "api_exposes_optout": false,
+    "env_MISTRAL_TRAINING_OPTOUT_CONFIRMED": "true",
+    "resolved_trains_on_free_tier": null,
+    "note": "Mistral API does not expose the console training opt-out; treated as training-tier (PII-ineligible) until the user confirms and sets MISTRAL_TRAINING_OPTOUT_CONFIRMED=true."
+  }
+}

@@ -1,0 +1,26 @@
+{
+ "key": "eae39da177ced102e8ffa6edca4b4d831394abe132f0dd5b64f21340e3d23e56",
+ "kind": "chat",
+ "latency_ms": 946,
+ "model_id": "groq-qwen-vl",
+ "model_name": "qwen/qwen3.8-27b",
+ "response": {
+  "data": null,
+  "headers": {
+   "x-ratelimit-limit-requests": "1000",
+   "x-ratelimit-limit-tokens": "8000",
+   "x-ratelimit-remaining-requests": "999",
+   "x-ratelimit-remaining-tokens": "4867",
+   "x-ratelimit-reset-requests": "1m26.4s",
+   "x-ratelimit-reset-tokens": "23.497s"
+  },
+  "image_tokens": 0,
+  "json_mode_used": "json_object",
+  "latency_ms": 946,
+  "pages": 0,
+  "resolved_model": "qwen/qwen3.8-27b",
+  "text": "{\"challenges\": []}",
+  "tokens_in": 3006,
+  "tokens_out": 7
+ }
+}

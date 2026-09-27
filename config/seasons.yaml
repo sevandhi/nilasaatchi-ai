@@ -1,0 +1,36 @@
+# Seasons for parcel-season features (T3.3). Owner: eo-engineer.
+# Thoothukudi is in the SW-monsoon rain shadow: most rain falls with the NE monsoon (Oct–Dec), and rainfed
+# crops (millets, pulses, cotton, chilli) are sown Oct–Nov and harvested Jan–Feb. "Kharif" (Jun–Sep) is
+# therefore mostly dry here except on irrigated land.
+version: seasons-v1
+ag_year_start_month: 6          # ag_year Y = Jun Y .. May Y+1 (matches parcel_season.ag_year)
+seasons:                         # months are calendar months; a season belongs to the ag_year it starts in
+  kharif: [6, 7, 8, 9]
+  rabi: [10, 11, 12, 1, 2]       # Rabi / NE monsoon
+  summer: [3, 4, 5]
+annual_label: annual             # the whole ag-year row in parcel_season
+dry_months: [3, 4, 5, 6, 7, 8, 9]   # dry_mean / bsi_dry_mean use these months within a window; windows without
+                                    # dry months (rabi) use the mean of the lowest quartile of smoothed values
+
+gap_rule:
+  max_gap_days: 45               # a season with a longer gap (edges included) is flagged gap_flag
+  min_obs: 2                     # a state needs >= 2 usable obs in the window OR all gaps < max_gap_days
+
+smoothing:
+  method: whittaker              # 2nd-order differences on a daily grid, robust (bisquare) reweighting
+  step_days: 1
+  lambda: auto                   # auto = tuned by hold-out CV on the spike parcels (see planet.features)
+  lambda_grid: [10, 30, 100, 300, 1000, 3000, 10000]
+  robust_iterations: 2
+
+usable_obs:                      # which parcel_obs rows enter the smoother
+  min_valid_frac: 0.5            # partly clouded parcels: residual haze at cloud edges biases medians
+  normal: {min_n_px: 10}         # = not low_support
+  mixed_pixel: {min_n_px: 1}     # D-026 structurally small parcels (all obs are low_support by definition)
+
+peaks:
+  min_height: 0.45
+  min_prominence: 0.15
+integral_baseline: 0.15          # integral = sum over days of max(ndvi - baseline, 0)  (NDVI-days)
+neighbour_radius_m: 300
+mixed_pixel_confidence_cap: 0.6  # passed to T3.4 via features.confidence_cap

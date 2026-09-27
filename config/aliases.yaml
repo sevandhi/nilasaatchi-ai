@@ -1,0 +1,50 @@
+# Canonical village and district names for the Allikulam SIPCOT park.
+# Seeded from land-domain-knowledge §7 and the golden-set spellings in §11b (2026-09-26).
+# Extend only with evidence (cite the document/page in the comment).
+# Matching is done on a folded key (Unicode NFC, case-folded, spaces/punctuation/ZW chars
+# removed, trailing "village"/"கிராமம்" dropped), so case and spacing variants need no entry.
+# `name_ta` is the preferred Tamil spelling (first seen in the skill table).
+
+villages:
+  Allikulam:
+    name_ta: அல்லிகுளம்
+    aliases:
+      - அல்லிகுளம்
+      - அல்லிக்குளம்          # §11b golden set
+  Keelathattaparai:
+    name_ta: கீழத்தட்டப்பாறை
+    aliases:
+      - Keel Thattaparai
+      - கீழத்தட்டப்பாறை
+      - கீழதட்டப்பாறை        # §11b golden set
+      - கிழத்தட்டப்பாரை      # OCR ர/ற, ி/ீ variant (findings run)
+  Melathattaparai:
+    name_ta: மேலத்தட்டப்பாறை
+    aliases:
+      - Mela Thattaparai
+      - Melathataparai
+      - மேலத்தட்டப்பாறை
+      - மேலத்தட்டப்பாரை      # OCR ர/ற variant (findings run)
+  Umarikottai:
+    name_ta: உமரிக்கோட்டை
+    aliases:
+      - உமரிக்கோட்டை
+  Peroorani:
+    name_ta: பேரூரணி
+    aliases:
+      - Perurani                # §7 and §11b golden set
+      - பேரூரணி
+  Ramasamypuram:
+    name_ta: இராமசாமிபுரம்
+    aliases:
+      - இராமசாமிபுரம்
+  South Silukanpatti:
+    name_ta: தெற்கு சிலுக்கன்பட்டி
+    aliases:
+      - தெற்கு சிலுக்கன்பட்டி
+
+districts:
+  Thoothukudi:
+    aliases:
+      - Thoothukkudi            # FMB layer dist_name
+      - தூத்துக்குடி

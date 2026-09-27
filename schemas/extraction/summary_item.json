@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nilasaatchi.local/schemas/extraction/summary_item.json",
+  "title": "SummaryItem",
+  "description": "A row of a proceedings/summary 'items' table (serial, description, extent, amount) - no survey number (held-out loop 4).",
+  "type": "object",
+  "properties": {
+    "record_type": {"const": "summary_item"},
+    "table_role": {"const": "summary"},
+    "serial": {"type": ["string", "null"]},
+    "description": {"type": ["string", "null"]},
+    "extent_ha": {"type": ["number", "null"]},
+    "extent_ac": {"type": ["number", "null"]},
+    "amount_rs": {"type": ["integer", "null"]},
+    "raw": {"type": "object"},
+    "evidence": {"$ref": "evidence.json"}
+  },
+  "required": ["record_type", "evidence"]
+}

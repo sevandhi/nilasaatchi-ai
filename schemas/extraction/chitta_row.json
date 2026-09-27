@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nilasaatchi.local/schemas/extraction/chitta_row.json",
+  "title": "ChittaRow",
+  "allOf": [{"$ref": "parcel_row.json"}],
+  "anyOf": [{"required": ["survey_no"], "properties": {"survey_no": {"type": "string"}}},
+            {"required": ["owner_raw"], "properties": {"owner_raw": {"type": "string"}}}]
+}

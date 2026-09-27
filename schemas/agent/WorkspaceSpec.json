@@ -1,0 +1,965 @@
+{
+ "$defs": {
+  "ChartSpec": {
+   "additionalProperties": false,
+   "properties": {
+    "claim_ids": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Claim Ids",
+     "type": "array"
+    },
+    "data": {
+     "items": {
+      "additionalProperties": true,
+      "type": "object"
+     },
+     "title": "Data",
+     "type": "array"
+    },
+    "id": {
+     "title": "Id",
+     "type": "string"
+    },
+    "title": {
+     "title": "Title",
+     "type": "string"
+    },
+    "type": {
+     "enum": [
+      "bar",
+      "stacked_bar",
+      "line",
+      "pie"
+     ],
+     "title": "Type",
+     "type": "string"
+    },
+    "x": {
+     "title": "X",
+     "type": "string"
+    },
+    "y": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Y",
+     "type": "array"
+    }
+   },
+   "required": [
+    "id",
+    "title",
+    "type",
+    "x",
+    "y",
+    "data"
+   ],
+   "title": "ChartSpec",
+   "type": "object"
+  },
+  "CheckResult": {
+   "additionalProperties": false,
+   "properties": {
+    "detail": {
+     "default": "",
+     "title": "Detail",
+     "type": "string"
+    },
+    "name": {
+     "title": "Name",
+     "type": "string"
+    },
+    "passed": {
+     "title": "Passed",
+     "type": "boolean"
+    }
+   },
+   "required": [
+    "name",
+    "passed"
+   ],
+   "title": "CheckResult",
+   "type": "object"
+  },
+  "Column": {
+   "additionalProperties": false,
+   "properties": {
+    "key": {
+     "title": "Key",
+     "type": "string"
+    },
+    "label": {
+     "title": "Label",
+     "type": "string"
+    },
+    "type": {
+     "default": "string",
+     "enum": [
+      "string",
+      "number",
+      "date",
+      "bool"
+     ],
+     "title": "Type",
+     "type": "string"
+    }
+   },
+   "required": [
+    "key",
+    "label"
+   ],
+   "title": "Column",
+   "type": "object"
+  },
+  "Evidence": {
+   "additionalProperties": false,
+   "properties": {
+    "bbox": {
+     "anyOf": [
+      {
+       "items": {
+        "type": "number"
+       },
+       "type": "array"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Bbox"
+    },
+    "document_id": {
+     "anyOf": [
+      {
+       "type": "integer"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Document Id"
+    },
+    "excerpt": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Excerpt"
+    },
+    "kind": {
+     "enum": [
+      "page_bbox",
+      "sql",
+      "layer_feature",
+      "raster",
+      "satellite_chip",
+      "timeseries",
+      "document"
+     ],
+     "title": "Kind",
+     "type": "string"
+    },
+    "page": {
+     "anyOf": [
+      {
+       "type": "integer"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Page"
+    },
+    "ref": {
+     "title": "Ref",
+     "type": "string"
+    }
+   },
+   "required": [
+    "kind",
+    "ref"
+   ],
+   "title": "Evidence",
+   "type": "object"
+  },
+  "EvidenceGroup": {
+   "additionalProperties": false,
+   "properties": {
+    "claim_id": {
+     "title": "Claim Id",
+     "type": "string"
+    },
+    "items": {
+     "items": {
+      "$ref": "#/$defs/Evidence"
+     },
+     "title": "Items",
+     "type": "array"
+    }
+   },
+   "required": [
+    "claim_id",
+    "items"
+   ],
+   "title": "EvidenceGroup",
+   "type": "object"
+  },
+  "Kpi": {
+   "additionalProperties": false,
+   "properties": {
+    "claim_id": {
+     "title": "Claim Id",
+     "type": "string"
+    },
+    "confidence": {
+     "maximum": 1,
+     "minimum": 0,
+     "title": "Confidence",
+     "type": "number"
+    },
+    "id": {
+     "title": "Id",
+     "type": "string"
+    },
+    "label": {
+     "title": "Label",
+     "type": "string"
+    },
+    "status": {
+     "enum": [
+      "verified",
+      "downgraded",
+      "review"
+     ],
+     "title": "Status",
+     "type": "string"
+    },
+    "unit": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Unit"
+    },
+    "value": {
+     "title": "Value"
+    }
+   },
+   "required": [
+    "id",
+    "label",
+    "value",
+    "claim_id",
+    "status",
+    "confidence"
+   ],
+   "title": "Kpi",
+   "type": "object"
+  },
+  "LegendItem": {
+   "additionalProperties": false,
+   "properties": {
+    "color": {
+     "title": "Color",
+     "type": "string"
+    },
+    "label": {
+     "title": "Label",
+     "type": "string"
+    },
+    "value": {
+     "title": "Value"
+    }
+   },
+   "required": [
+    "value",
+    "label",
+    "color"
+   ],
+   "title": "LegendItem",
+   "type": "object"
+  },
+  "MapLayer": {
+   "additionalProperties": false,
+   "properties": {
+    "color_by": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Color By"
+    },
+    "geojson": {
+     "anyOf": [
+      {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Geojson"
+    },
+    "id": {
+     "title": "Id",
+     "type": "string"
+    },
+    "kind": {
+     "enum": [
+      "parcels",
+      "polygons",
+      "points",
+      "reference"
+     ],
+     "title": "Kind",
+     "type": "string"
+    },
+    "legend": {
+     "items": {
+      "$ref": "#/$defs/LegendItem"
+     },
+     "title": "Legend",
+     "type": "array"
+    },
+    "ref_layer": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Ref Layer"
+    },
+    "title": {
+     "title": "Title",
+     "type": "string"
+    }
+   },
+   "required": [
+    "id",
+    "title",
+    "kind"
+   ],
+   "title": "MapLayer",
+   "type": "object"
+  },
+  "MapSpec": {
+   "additionalProperties": false,
+   "properties": {
+    "bbox": {
+     "anyOf": [
+      {
+       "items": {
+        "type": "number"
+       },
+       "type": "array"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Bbox"
+    },
+    "layers": {
+     "items": {
+      "$ref": "#/$defs/MapLayer"
+     },
+     "title": "Layers",
+     "type": "array"
+    },
+    "time_slider": {
+     "anyOf": [
+      {
+       "$ref": "#/$defs/TimeSlider"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null
+    }
+   },
+   "title": "MapSpec",
+   "type": "object"
+  },
+  "Narrative": {
+   "additionalProperties": false,
+   "properties": {
+    "claim_refs": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Claim Refs",
+     "type": "array"
+    },
+    "en": {
+     "default": "",
+     "title": "En",
+     "type": "string"
+    },
+    "ta": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Ta"
+    }
+   },
+   "title": "Narrative",
+   "type": "object"
+  },
+  "RouteTraceEntry": {
+   "additionalProperties": false,
+   "properties": {
+    "actual_cost_usd": {
+     "default": 0.0,
+     "title": "Actual Cost Usd",
+     "type": "number"
+    },
+    "attempts": {
+     "items": {
+      "additionalProperties": true,
+      "type": "object"
+     },
+     "title": "Attempts",
+     "type": "array"
+    },
+    "candidates": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Candidates",
+     "type": "array"
+    },
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Choice"
+    },
+    "effective_tier": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Effective Tier"
+    },
+    "filtered": {
+     "items": {
+      "additionalProperties": true,
+      "type": "object"
+     },
+     "title": "Filtered",
+     "type": "array"
+    },
+    "latency_ms": {
+     "default": 0,
+     "title": "Latency Ms",
+     "type": "integer"
+    },
+    "privacy_tier": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Privacy Tier"
+    },
+    "reason": {
+     "default": "",
+     "title": "Reason",
+     "type": "string"
+    },
+    "scores": {
+     "additionalProperties": {
+      "type": "number"
+     },
+     "title": "Scores",
+     "type": "object"
+    },
+    "shadow_cost_usd": {
+     "default": 0.0,
+     "title": "Shadow Cost Usd",
+     "type": "number"
+    },
+    "step_id": {
+     "title": "Step Id",
+     "type": "string"
+    },
+    "task": {
+     "title": "Task",
+     "type": "string"
+    },
+    "tokens_in": {
+     "default": 0,
+     "title": "Tokens In",
+     "type": "integer"
+    },
+    "tokens_out": {
+     "default": 0,
+     "title": "Tokens Out",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "step_id",
+    "task"
+   ],
+   "title": "RouteTraceEntry",
+   "type": "object"
+  },
+  "SqlEntry": {
+   "additionalProperties": false,
+   "properties": {
+    "sql": {
+     "title": "Sql",
+     "type": "string"
+    },
+    "step_id": {
+     "title": "Step Id",
+     "type": "string"
+    }
+   },
+   "required": [
+    "step_id",
+    "sql"
+   ],
+   "title": "SqlEntry",
+   "type": "object"
+  },
+  "TableSpec": {
+   "additionalProperties": false,
+   "properties": {
+    "claim_ids": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Claim Ids",
+     "type": "array"
+    },
+    "columns": {
+     "items": {
+      "$ref": "#/$defs/Column"
+     },
+     "title": "Columns",
+     "type": "array"
+    },
+    "id": {
+     "title": "Id",
+     "type": "string"
+    },
+    "rows": {
+     "items": {
+      "additionalProperties": true,
+      "type": "object"
+     },
+     "maxItems": 5000,
+     "title": "Rows",
+     "type": "array"
+    },
+    "sql": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Sql"
+    },
+    "title": {
+     "title": "Title",
+     "type": "string"
+    }
+   },
+   "required": [
+    "id",
+    "title",
+    "columns",
+    "rows"
+   ],
+   "title": "TableSpec",
+   "type": "object"
+  },
+  "TimeSlider": {
+   "additionalProperties": false,
+   "properties": {
+    "field": {
+     "default": "season",
+     "title": "Field",
+     "type": "string"
+    },
+    "values": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Values",
+     "type": "array"
+    }
+   },
+   "title": "TimeSlider",
+   "type": "object"
+  },
+  "TimelineEvent": {
+   "additionalProperties": false,
+   "properties": {
+    "date": {
+     "title": "Date",
+     "type": "string"
+    },
+    "evidence_ref": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Evidence Ref"
+    },
+    "label": {
+     "default": "",
+     "title": "Label",
+     "type": "string"
+    },
+    "stage": {
+     "title": "Stage",
+     "type": "string"
+    }
+   },
+   "required": [
+    "date",
+    "stage"
+   ],
+   "title": "TimelineEvent",
+   "type": "object"
+  },
+  "TimelineSpec": {
+   "additionalProperties": false,
+   "properties": {
+    "events": {
+     "items": {
+      "$ref": "#/$defs/TimelineEvent"
+     },
+     "title": "Events",
+     "type": "array"
+    },
+    "series": {
+     "items": {
+      "additionalProperties": true,
+      "type": "object"
+     },
+     "title": "Series",
+     "type": "array"
+    },
+    "subject": {
+     "title": "Subject",
+     "type": "string"
+    }
+   },
+   "required": [
+    "subject"
+   ],
+   "title": "TimelineSpec",
+   "type": "object"
+  },
+  "VerificationClaim": {
+   "additionalProperties": false,
+   "properties": {
+    "checks": {
+     "items": {
+      "$ref": "#/$defs/CheckResult"
+     },
+     "title": "Checks",
+     "type": "array"
+    },
+    "claim_id": {
+     "title": "Claim Id",
+     "type": "string"
+    },
+    "confidence": {
+     "title": "Confidence",
+     "type": "number"
+    },
+    "critic": {
+     "anyOf": [
+      {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Critic"
+    },
+    "verdict": {
+     "anyOf": [
+      {
+       "enum": [
+        "ACCEPT",
+        "DOWNGRADE",
+        "REROUTE",
+        "REVIEW"
+       ],
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "title": "Verdict"
+    }
+   },
+   "required": [
+    "claim_id",
+    "verdict",
+    "confidence"
+   ],
+   "title": "VerificationClaim",
+   "type": "object"
+  },
+  "VerificationSpec": {
+   "additionalProperties": false,
+   "properties": {
+    "claims": {
+     "items": {
+      "$ref": "#/$defs/VerificationClaim"
+     },
+     "title": "Claims",
+     "type": "array"
+    },
+    "summary": {
+     "$ref": "#/$defs/VerificationSummary"
+    }
+   },
+   "title": "VerificationSpec",
+   "type": "object"
+  },
+  "VerificationSummary": {
+   "additionalProperties": false,
+   "properties": {
+    "accepted": {
+     "default": 0,
+     "title": "Accepted",
+     "type": "integer"
+    },
+    "downgraded": {
+     "default": 0,
+     "title": "Downgraded",
+     "type": "integer"
+    },
+    "rerouted": {
+     "default": 0,
+     "title": "Rerouted",
+     "type": "integer"
+    },
+    "review": {
+     "default": 0,
+     "title": "Review",
+     "type": "integer"
+    }
+   },
+   "title": "VerificationSummary",
+   "type": "object"
+  }
+ },
+ "additionalProperties": false,
+ "properties": {
+  "caveats": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Caveats",
+   "type": "array"
+  },
+  "charts": {
+   "items": {
+    "$ref": "#/$defs/ChartSpec"
+   },
+   "title": "Charts",
+   "type": "array"
+  },
+  "created_at": {
+   "title": "Created At",
+   "type": "string"
+  },
+  "domain": {
+   "title": "Domain",
+   "type": "string"
+  },
+  "evidence": {
+   "items": {
+    "$ref": "#/$defs/EvidenceGroup"
+   },
+   "title": "Evidence",
+   "type": "array"
+  },
+  "kpis": {
+   "items": {
+    "$ref": "#/$defs/Kpi"
+   },
+   "title": "Kpis",
+   "type": "array"
+  },
+  "lang": {
+   "default": "en",
+   "enum": [
+    "en",
+    "ta"
+   ],
+   "title": "Lang",
+   "type": "string"
+  },
+  "ledger_head": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Ledger Head"
+  },
+  "map": {
+   "$ref": "#/$defs/MapSpec"
+  },
+  "narrative": {
+   "$ref": "#/$defs/Narrative"
+  },
+  "route_trace": {
+   "items": {
+    "$ref": "#/$defs/RouteTraceEntry"
+   },
+   "title": "Route Trace",
+   "type": "array"
+  },
+  "run_id": {
+   "title": "Run Id",
+   "type": "string"
+  },
+  "spec_version": {
+   "const": "1",
+   "default": "1",
+   "title": "Spec Version",
+   "type": "string"
+  },
+  "sql": {
+   "items": {
+    "$ref": "#/$defs/SqlEntry"
+   },
+   "title": "Sql",
+   "type": "array"
+  },
+  "tables": {
+   "items": {
+    "$ref": "#/$defs/TableSpec"
+   },
+   "title": "Tables",
+   "type": "array"
+  },
+  "timeline": {
+   "anyOf": [
+    {
+     "$ref": "#/$defs/TimelineSpec"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null
+  },
+  "title": {
+   "title": "Title",
+   "type": "string"
+  },
+  "verification": {
+   "$ref": "#/$defs/VerificationSpec"
+  },
+  "version": {
+   "anyOf": [
+    {
+     "type": "integer"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Version"
+  },
+  "workspace_id": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Workspace Id"
+  }
+ },
+ "required": [
+  "title",
+  "domain",
+  "run_id",
+  "created_at"
+ ],
+ "title": "WorkspaceSpec",
+ "type": "object"
+}

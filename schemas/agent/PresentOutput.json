@@ -1,0 +1,33 @@
+{
+ "additionalProperties": false,
+ "properties": {
+  "claim_refs": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Claim Refs",
+   "type": "array"
+  },
+  "en": {
+   "title": "En",
+   "type": "string"
+  },
+  "ta": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Ta"
+  }
+ },
+ "required": [
+  "en"
+ ],
+ "title": "PresentOutput",
+ "type": "object"
+}

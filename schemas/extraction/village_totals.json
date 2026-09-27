@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nilasaatchi.local/schemas/extraction/village_totals.json",
+  "title": "VillageTotals",
+  "description": "GO / AS / AS_PROPOSAL / LPS village-level extents (PUBLIC tier).",
+  "type": "object",
+  "properties": {
+    "record_type": {"const": "village_totals"},
+    "serial": {"type": ["string", "null"]},
+    "village": {"type": ["string", "null"]},
+    "village_raw": {"type": ["string", "null"]},
+    "wet_ha": {"type": ["number", "null"]}, "wet_ac": {"type": ["number", "null"]},
+    "patta_ha": {"type": ["number", "null"]}, "patta_ac": {"type": ["number", "null"]},
+    "poramboke_ha": {"type": ["number", "null"]}, "poramboke_ac": {"type": ["number", "null"]},
+    "total_ha": {"type": ["number", "null"]}, "total_ac": {"type": ["number", "null"]},
+    "raw": {"type": "object"},
+    "evidence": {"$ref": "evidence.json"}
+  },
+  "required": ["record_type", "evidence"]
+}

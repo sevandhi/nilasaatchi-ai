@@ -1,0 +1,37 @@
+{
+ "additionalProperties": false,
+ "properties": {
+  "claim_id": {
+   "title": "Claim Id",
+   "type": "string"
+  },
+  "confidence": {
+   "maximum": 1,
+   "minimum": 0,
+   "title": "Confidence",
+   "type": "number"
+  },
+  "reason": {
+   "default": "",
+   "title": "Reason",
+   "type": "string"
+  },
+  "verdict": {
+   "enum": [
+    "ACCEPT",
+    "DOWNGRADE",
+    "REROUTE",
+    "REVIEW"
+   ],
+   "title": "Verdict",
+   "type": "string"
+  }
+ },
+ "required": [
+  "claim_id",
+  "verdict",
+  "confidence"
+ ],
+ "title": "Verdict",
+ "type": "object"
+}

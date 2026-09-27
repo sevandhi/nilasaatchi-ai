@@ -1,0 +1,453 @@
+{
+ "version": "did-v2",
+ "generated": "2026-09-27T06:08:01+00:00",
+ "park_wide_rabi": {
+  "periods": {
+   "baseline": "rabi seasons with midpoint before T_3(1) (undisturbed)",
+   "pending_award": "rabi seasons between T_3(1) and T_possession",
+   "post_possession": "rabi seasons with midpoint on/after T_possession"
+  },
+  "metrics": {
+   "vigour_z": {
+    "estimate": {
+     "baseline": -0.21457861736842734,
+     "pending_award": -0.07664238968835443,
+     "post_possession": 0.14811002032783616,
+     "did_post_vs_baseline": 0.36268863769626347,
+     "did_pending_vs_baseline": 0.1379362276800729
+    },
+    "ci95": {
+     "baseline": [
+      -0.2752923914798902,
+      -0.150367816487223
+     ],
+     "pending_award": [
+      -0.14036327306894855,
+      -0.009628682037544955
+     ],
+     "post_possession": [
+      0.056429143361915665,
+      0.2424349249779302
+     ],
+     "did_post_vs_baseline": [
+      0.2821889148314,
+      0.44720054879951876
+     ],
+     "did_pending_vs_baseline": [
+      0.07342038211313888,
+      0.20508762578370276
+     ]
+    },
+    "median_by_ag_year": {
+     "2018": {
+      "parcels": -0.5168296252036613,
+      "controls": 0.14013127545116494
+     },
+     "2019": {
+      "parcels": -0.26969399650010606,
+      "controls": 0.05555908912657739
+     },
+     "2020": {
+      "parcels": -0.24764253687315346,
+      "controls": -0.032835607900678694
+     },
+     "2021": {
+      "parcels": 0.25899738003632633,
+      "controls": 0.06097364810097258
+     },
+     "2022": {
+      "parcels": -0.09044391591251134,
+      "controls": 0.09757545736576373
+     },
+     "2023": {
+      "parcels": -0.12090447768957477,
+      "controls": -0.02524477401649096
+     },
+     "2024": {
+      "parcels": -0.2559643679491549,
+      "controls": -0.06311765132990306
+     },
+     "2025": {
+      "parcels": 0.2367910489621008,
+      "controls": 0.12042659007315515
+     }
+    }
+   },
+   "pct_amplitude": {
+    "estimate": {
+     "baseline": -0.15560567010309279,
+     "pending_award": -0.22259505508795813,
+     "post_possession": -0.09330436442717942,
+     "did_post_vs_baseline": 0.06230130567591337,
+     "did_pending_vs_baseline": -0.06698938498486534
+    },
+    "ci95": {
+     "baseline": [
+      -0.17373619437863932,
+      -0.1357889634777466
+     ],
+     "pending_award": [
+      -0.24607400487076628,
+      -0.19861161982263442
+     ],
+     "post_possession": [
+      -0.1270417129400723,
+      -0.06348039104001396
+     ],
+     "did_post_vs_baseline": [
+      0.030766948191028497,
+      0.09122827695722181
+     ],
+     "did_pending_vs_baseline": [
+      -0.08847432269183288,
+      -0.044994217776424275
+     ]
+    },
+    "median_by_ag_year": {
+     "2018": {
+      "parcels": 0.25257731958762886,
+      "controls": 0.5012886597938144
+     },
+     "2019": {
+      "parcels": 0.23324742268041238,
+      "controls": 0.5012886597938144
+     },
+     "2020": {
+      "parcels": 0.31572164948453607,
+      "controls": 0.5012886597938144
+     },
+     "2021": {
+      "parcels": 0.422680412371134,
+      "controls": 0.5012886597938144
+     },
+     "2022": {
+      "parcels": 0.2706185567010309,
+      "controls": 0.5012886597938144
+     },
+     "2023": {
+      "parcels": 0.2190721649484536,
+      "controls": 0.5012886597938144
+     },
+     "2024": {
+      "parcels": 0.2036082474226804,
+      "controls": 0.5012886597938144
+     },
+     "2025": {
+      "parcels": 0.36597938144329895,
+      "controls": 0.5012886597938144
+     }
+    }
+   },
+   "plough_z": {
+    "estimate": {
+     "baseline": -0.12132002288849057,
+     "pending_award": -0.6904715722958584,
+     "post_possession": -0.06339447590186556,
+     "did_post_vs_baseline": 0.05792554698662501,
+     "did_pending_vs_baseline": -0.5691515494073679
+    },
+    "ci95": {
+     "baseline": [
+      -0.23777244464774402,
+      -0.006620798711711468
+     ],
+     "pending_award": [
+      -0.80048571887091,
+      -0.578484928709682
+     ],
+     "post_possession": [
+      -0.24429986900158904,
+      0.09978771150131666
+     ],
+     "did_post_vs_baseline": [
+      -0.1373384396657638,
+      0.24835907243153074
+     ],
+     "did_pending_vs_baseline": [
+      -0.7152652448471738,
+      -0.42189878084368926
+     ]
+    },
+    "median_by_ag_year": {
+     "2018": {
+      "parcels": null,
+      "controls": null
+     },
+     "2019": {
+      "parcels": 0.18098635226488113,
+      "controls": 0.4785500168800354
+     },
+     "2020": {
+      "parcels": -0.22697068750858307,
+      "controls": 0.04989139176905155
+     },
+     "2021": {
+      "parcels": 0.2751483619213104,
+      "controls": 0.3871234357357025
+     },
+     "2022": {
+      "parcels": -0.4214839041233063,
+      "controls": 0.6631162166595459
+     },
+     "2023": {
+      "parcels": -0.25477492809295654,
+      "controls": 0.3475959897041321
+     },
+     "2024": {
+      "parcels": -1.163276195526123,
+      "controls": -0.8432473540306091
+     },
+     "2025": {
+      "parcels": -0.24363518506288528,
+      "controls": -0.09945137426257133
+     }
+    }
+   },
+   "plough_present": {
+    "estimate": {
+     "baseline": -0.059454226405920046,
+     "pending_award": -0.04325855544185328,
+     "post_possession": -0.026664392518051055,
+     "did_post_vs_baseline": 0.03278983388786899,
+     "did_pending_vs_baseline": 0.016195670964066766
+    },
+    "ci95": {
+     "baseline": [
+      -0.07998628442760762,
+      -0.03775942628138693
+     ],
+     "pending_award": [
+      -0.061501110111294964,
+      -0.02507795575285198
+     ],
+     "post_possession": [
+      -0.05477408934539016,
+      -0.0046042827510241295
+     ],
+     "did_post_vs_baseline": [
+      -0.001968227594242864,
+      0.06311170669665127
+     ],
+     "did_pending_vs_baseline": [
+      -0.012756589935274468,
+      0.04210979970447768
+     ]
+    },
+    "median_by_ag_year": {
+     "2018": {
+      "parcels": null,
+      "controls": null
+     },
+     "2019": {
+      "parcels": 0.0,
+      "controls": 0.0
+     },
+     "2020": {
+      "parcels": 0.0,
+      "controls": 0.0
+     },
+     "2021": {
+      "parcels": 0.0,
+      "controls": 0.0
+     },
+     "2022": {
+      "parcels": 0.0,
+      "controls": 0.0
+     },
+     "2023": {
+      "parcels": 0.0,
+      "controls": 0.0
+     },
+     "2024": {
+      "parcels": 0.0,
+      "controls": 0.0
+     },
+     "2025": {
+      "parcels": 0.0,
+      "controls": 0.0
+     }
+    }
+   },
+   "onset_doy": {
+    "estimate": {
+     "baseline": -3.6025682133805144,
+     "pending_award": -7.48391613252342,
+     "post_possession": -5.214264801221312,
+     "did_post_vs_baseline": -1.611696587840798,
+     "did_pending_vs_baseline": -3.8813479191429052
+    },
+    "ci95": {
+     "baseline": [
+      -4.641488583060461,
+      -2.561726623399738
+     ],
+     "pending_award": [
+      -8.826536946985408,
+      -6.143694365736984
+     ],
+     "post_possession": [
+      -6.797980129825692,
+      -3.5564505647021747
+     ],
+     "did_post_vs_baseline": [
+      -2.877374557648595,
+      -0.12377293338297861
+     ],
+     "did_pending_vs_baseline": [
+      -5.163820832019312,
+      -2.583162988491618
+     ]
+    },
+    "median_by_ag_year": {
+     "2018": {
+      "parcels": null,
+      "controls": null
+     },
+     "2019": {
+      "parcels": 132.0,
+      "controls": 137.0
+     },
+     "2020": {
+      "parcels": 176.0,
+      "controls": 176.0
+     },
+     "2021": {
+      "parcels": 161.0,
+      "controls": 166.0
+     },
+     "2022": {
+      "parcels": 146.0,
+      "controls": 151.0
+     },
+     "2023": {
+      "parcels": 146.0,
+      "controls": 151.0
+     },
+     "2024": {
+      "parcels": 145.0,
+      "controls": 152.5
+     },
+     "2025": {
+      "parcels": 145.0,
+      "controls": 155.0
+     }
+    }
+   },
+   "z_peak_offset": {
+    "estimate": {
+     "baseline": -0.1882884621803042,
+     "pending_award": -0.17514543497294852,
+     "post_possession": 0.12498267752266572,
+     "did_post_vs_baseline": 0.31327113970296994,
+     "did_pending_vs_baseline": 0.01314302720735569
+    },
+    "ci95": {
+     "baseline": [
+      -0.26689297956668323,
+      -0.11724610886423634
+     ],
+     "pending_award": [
+      -0.24884654296566053,
+      -0.1053359055919054
+     ],
+     "post_possession": [
+      0.012970058289541404,
+      0.23463543429014103
+     ],
+     "did_post_vs_baseline": [
+      0.2122189739798022,
+      0.41387607573119095
+     ],
+     "did_pending_vs_baseline": [
+      -0.07087377675991198,
+      0.08940177230450427
+     ]
+    },
+    "median_by_ag_year": {
+     "2018": {
+      "parcels": 0.0,
+      "controls": 0.0
+     },
+     "2019": {
+      "parcels": -0.5004286279987642,
+      "controls": 0.0
+     },
+     "2020": {
+      "parcels": 0.0,
+      "controls": 0.0
+     },
+     "2021": {
+      "parcels": -0.32258253714098034,
+      "controls": 0.0
+     },
+     "2022": {
+      "parcels": -0.42155672467287203,
+      "controls": 0.0
+     },
+     "2023": {
+      "parcels": -0.1839520253117987,
+      "controls": 0.0
+     },
+     "2024": {
+      "parcels": 0.03747170885981085,
+      "controls": 0.0
+     },
+     "2025": {
+      "parcels": 0.06744907594765952,
+      "controls": 0.0
+     }
+    }
+   }
+  },
+  "n_parcels": 1242,
+  "n_controls": 388,
+  "bootstrap": 1000
+ },
+ "post_possession": {
+  "parcels": 1242,
+  "farmland_like_p_ge_0_7": 1143,
+  "farmland_like_p_hist": {
+   "0-0.1": 86,
+   "0.1-0.3": 4,
+   "0.3-0.5": 6,
+   "0.5-0.7": 3,
+   "0.7-0.9": 5,
+   "0.9-1": 1138
+  },
+  "farmland_like_meaning": "greenness only: post-event vigour inside the control farmland range; does NOT separate a crop from a NE-monsoon weed flush",
+  "vigour_did": {
+   "median": 0.25302459469854016,
+   "p10": -0.35255641433701235,
+   "p90": 1.0263111446295796,
+   "ci_below_0": 143,
+   "ci_above_0": 513,
+   "ci_spans_0": 586
+  },
+  "plough_z_did": {
+   "n": 1144,
+   "median": 0.30485265477207646,
+   "ci_below_0": 128,
+   "ci_above_0": 288
+  },
+  "post_possession_rabi_plough": {
+   "parcel_seasons_defined": 1144,
+   "plough_detected": 16,
+   "rate": 0.013986013986013986,
+   "signal_quantiles": {
+    "0.1": -1.4138657212257384,
+    "0.5": -0.24363518506288528,
+    "0.9": 0.8213806867599488
+   }
+  },
+  "farmland_like_and_plough_detected": 15,
+  "significant_vigour_drop_vs_controls": 143
+ },
+ "caveats": [
+  "signal needing field verification",
+  "controls are WorldCover-2021 cropland 2-6 km away (soil/irrigation may differ)",
+  "clouds/haze and mixed pixels",
+  "NE-monsoon weed flush also greens fallow land",
+  "event dates are document-level fallbacks until P2",
+  "few post-possession seasons (CI mostly reflects control spread)"
+ ]
+}

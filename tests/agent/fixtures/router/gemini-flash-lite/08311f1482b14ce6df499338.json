@@ -1,0 +1,19 @@
+{
+ "key": "08311f1482b14ce6df4993387a823db5357950c5a713f9c6c4e61941c0d0cce1",
+ "kind": "chat",
+ "latency_ms": 13702,
+ "model_id": "gemini-flash-lite",
+ "model_name": "gemini-3.5-flash-lite",
+ "response": {
+  "data": null,
+  "headers": {},
+  "image_tokens": 0,
+  "json_mode_used": "json_schema",
+  "latency_ms": 13702,
+  "pages": 0,
+  "resolved_model": "gemini-3.5-flash-lite",
+  "text": "{\n  \"goal\": \"Verify Melathattaparai survey 233 documents against satellite observations and evidence.\",\n  \"steps\": [\n    {\n      \"id\": \"s1\",\n      \"tool\": \"evidence_pack\",\n      \"args\": {\n        }\n      },\n    {\n      \"id\": \"s2\",\n      \"tool\": \"paper_vs_planet\",\n      \"args\": {\n        },\n      \"depends_on\": [\"s1\"]\n    },\n    {\n      \"id\": \"s3\",\n      \"tool\": \"satellite_timeseries\",\n      \"args\": {\n        },\n      \"depends_on\": [\"s1\"]\n    },\n    {\n      \"id\": \"s4\",\n      \"tool\": \"summarise\",\n      \"args\": {\n        },\n      \"depends_on\": [\"s1\", \"s2\", \"s3\"]\n    }\n  ],\n  \"outputs\": [\n    \"narrative\",\n    \"timeline\",\n    \"table\"\n  ]\n}",
+  "tokens_in": 3679,
+  "tokens_out": 240
+ }
+}

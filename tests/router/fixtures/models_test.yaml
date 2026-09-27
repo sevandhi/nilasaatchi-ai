@@ -1,0 +1,134 @@
+# FROZEN test registry for tests/router (independent of config/models.yaml).
+# Keeps mistral-ocr (disabled in production by D-018) so opt-out resolution, PDF modality and the
+# OCR adapter path stay covered. Do not "sync" this with production; production-config invariants
+# are tested separately in test_registry_eligibility.py.
+version: 1
+router:
+  weights: {capability: 0.35, confidence: 0.25, latency: -0.15, shadow_cost: -0.10, quota_pressure: -0.15}
+  latency_ref_ms: 10000
+  cost_ref_usd: 0.01
+  daily_reserve_fraction: 0.10
+  timeouts_s: {text: 20, image: 60, ocr: 60}
+  retries_per_model: 1
+  breaker: {failures: 3, open_seconds: 60}
+  default_max_tokens: 1024
+  p50_min_samples: 3
+
+models:
+  - {id: gemini-flash-lite, provider: gemini, model: gemini-3.5-flash-lite, fallback_model: gemini-3.1-flash-lite,
+     vendor: google, modalities: [text, image, pdf], json_mode: json_schema, trains_on_free_tier: true,
+     cost_class: free, context_tokens: 1000000, limits: {rpd: 500, rpm: 15},
+     list_price_per_mtok: {in: 0.10, out: 0.40}, p50_ms_default: 1500, expected_confidence: 0.80}
+  - {id: gemini-flash, provider: gemini, model: gemini-3.8-flash, vendor: google, modalities: [text, image, pdf],
+     json_mode: json_schema, trains_on_free_tier: true, cost_class: free, context_tokens: 1000000,
+     limits: {rpd: 20}, list_price_per_mtok: {in: 0.30, out: 2.50}, p50_ms_default: 3000, expected_confidence: 0.88}
+  - {id: mistral-ocr, provider: mistral_ocr, model: mistral-ocr-latest, vendor: mistral, modalities: [pdf, image],
+     trains_on_free_tier: false_if_opted_out, optout_env: MISTRAL_TRAINING_OPTOUT_CONFIRMED, cost_class: free,
+     context_tokens: 0, limits: {monthly_credit_usd: 10}, list_price_per_page_usd: 0.004,
+     actual_cost_per_page_usd: 0.004, p50_ms_default: 4000, expected_confidence: 0.85}
+  - {id: groq-qwen-vl, provider: groq, model: qwen/qwen3.8-27b, vendor: alibaba-open, weights: open,
+     modalities: [text, image], json_mode: json_schema, trains_on_free_tier: false, cost_class: free,
+     context_tokens: 131072, limits: {rpm: 30, rpd: 1000, tpm: 8000, tpd: 200000, otpm: 1000}, min_image_px: 32,
+     list_price_per_mtok: {in: 0.29, out: 0.59}, p50_ms_default: 800, expected_confidence: 0.78}
+  - {id: groq-gpt-oss, provider: groq, model: openai/gpt-oss-120b, vendor: openai-open, weights: open,
+     modalities: [text], json_mode: json_schema, trains_on_free_tier: false, cost_class: free,
+     context_tokens: 131072, limits: {rpd: 1000, tpd: 200000}, list_price_per_mtok: {in: 0.15, out: 0.75},
+     p50_ms_default: 900, expected_confidence: 0.80}
+  - {id: cohere-command-a, provider: cohere, model: command-a-03-2025, vendor: cohere, modalities: [text],
+     json_mode: json_object, trains_on_free_tier: unknown, cost_class: free, context_tokens: 256000,
+     limits: {monthly_calls: 1000, rpm: 20}, list_price_per_mtok: {in: 2.50, out: 10.00},
+     p50_ms_default: 2500, expected_confidence: 0.75}
+  - {id: local-qwen, provider: ollama, model: "qwen3.5:4b", vendor: local, weights: open, modalities: [text],
+     json_mode: json_object, trains_on_free_tier: false, cost_class: local, context_tokens: 32768,
+     p50_ms_default: 8000, expected_confidence: 0.55}
+  - {id: bedrock-ministral-8b, provider: bedrock, model: mistral.ministral-3-8b-instruct, region: ap-south-1,
+     vendor: mistral-open, weights: open, modalities: [text, image], json_mode: prompt, trains_on_free_tier: false,
+     cost_class: capped_fallback, context_tokens: 128000, list_price_per_mtok: {in: 0.15, out: 0.15},
+     actual_cost_is_shadow: true, p50_ms_default: 2900, expected_confidence: 0.60}
+  - {id: bedrock-ministral-3b, provider: bedrock, model: mistral.ministral-3-3b-instruct, region: ap-south-1,
+     vendor: mistral-open, weights: open, modalities: [text, image], json_mode: prompt, trains_on_free_tier: false,
+     cost_class: capped_fallback, context_tokens: 128000, list_price_per_mtok: {in: 0.10, out: 0.10},
+     actual_cost_is_shadow: true, p50_ms_default: 1500, expected_confidence: 0.70}
+
+embeddings:
+  - {id: titan-embed-text-v2, provider: bedrock, model: "amazon.titan-embed-text-v2:0", kind: text, dims: 1024,
+     normalize: true, region: ap-south-1, cost_class: capped_fallback, trains_on_free_tier: false,
+     price_per_mtok_in: 0.02}
+  - {id: titan-embed-image-v1, provider: bedrock, model: amazon.titan-embed-image-v1, kind: image, dims: 1024,
+     region: ap-south-1, cost_class: capped_fallback, trains_on_free_tier: false, price_per_image_usd: 0.00006}
+  - {id: bge-m3, provider: local, model: BAAI/bge-m3, kind: text, dims: 1024, cost_class: local,
+     trains_on_free_tier: false}
+
+tasks:
+  plan:
+    requires: [text]
+    typical_tier: PSEUDO
+    chain:
+      - {model: gemini-flash-lite, capability: 1.00}
+      - {model: gemini-flash, capability: 0.95, when: hard_replan}
+      - {model: groq-qwen-vl, capability: 0.80}
+      - {model: local-qwen, capability: 0.50}
+    terminal: clarify_user
+  sql: &structured
+    requires: [text]
+    typical_tier: PII
+    chain:
+      - {model: groq-qwen-vl, capability: 1.00}
+      - {model: groq-gpt-oss, capability: 0.90}
+      - {model: bedrock-ministral-8b, capability: 0.60}
+      - {model: local-qwen, capability: 0.50}
+    terminal: template_or_clarify
+  tool_args: *structured
+  json_repair: *structured
+  table_read_pii:
+    requires: [image]
+    typical_tier: PII
+    chain:
+      - {model: mistral-ocr, capability: 1.00}
+      - {model: groq-qwen-vl, capability: 0.75}
+    terminal: review_queue
+  cell_reread:
+    requires: [image]
+    typical_tier: PII
+    chain:
+      - {model: groq-qwen-vl, capability: 1.00}
+    terminal: review_queue
+  critic:
+    requires: [text]
+    typical_tier: PSEUDO
+    exclude_producer_vendor: true
+    chain:
+      - {model: gemini-flash-lite, capability: 1.00}
+      - {model: groq-qwen-vl, capability: 0.90}
+      - {model: cohere-command-a, capability: 0.85}
+    terminal: deterministic_only
+  judge:
+    requires: [text]
+    typical_tier: PSEUDO
+    chain:
+      - {model: gemini-flash-lite, capability: 1.00}
+      - {model: cohere-command-a, capability: 0.85}
+    terminal: deterministic_only_downgrade
+  present:
+    requires: [text]
+    typical_tier: PSEUDO
+    chain:
+      - {model: gemini-flash-lite, capability: 1.00}
+      - {model: groq-qwen-vl, capability: 0.80}
+    terminal: template_narrative
+  satellite_teacher: &satellite
+    requires: [image]
+    typical_tier: PUBLIC
+    chain:
+      - {model: gemini-flash-lite, capability: 1.00}
+      - {model: groq-qwen-vl, capability: 0.80}
+    terminal: field_verification_queue
+  satellite_second_opinion: *satellite
+  classify_text:
+    requires: [text]
+    typical_tier: PII
+    chain:
+      - {model: bedrock-ministral-3b, capability: 1.00}
+      - {model: groq-gpt-oss, capability: 0.90}
+      - {model: local-qwen, capability: 0.60}
+    terminal: review_queue

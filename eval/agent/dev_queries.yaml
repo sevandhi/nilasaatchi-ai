@@ -1,0 +1,70 @@
+# P4 dev queries — run headless on the fixture KG (tests/fixtures/kg_small.sql) by eval/agent/run_dev.py.
+# Reference answers are computed by SQL in the harness (never stored in app/).
+# expect.numbers_sql: every value of the first row must appear in a KPI / table cell of the workspace (tolerance 0.5%).
+# expect.parcels_sql: every returned parcel_uid must appear in a workspace table.
+queries:
+  - id: d01
+    request: "Verify Melathattaparai survey 233: what do the documents claim, and what does the satellite show?"
+    expect: {domain: land_acquisition, parcels_sql: "SELECT 'Melathattaparai|233' AS parcel_uid"}
+  - id: d02
+    request: "Which parcels in Ramasamypuram are stalled - awarded but not paid, or paid without possession?"
+    expect:
+      domain: land_acquisition
+      parcels_sql: >-
+        SELECT p.parcel_uid FROM parcel p JOIN village v ON v.id=p.village_id WHERE v.name='Ramasamypuram'
+        AND EXISTS (SELECT 1 FROM acquisition_event e WHERE e.parcel_uid=p.parcel_uid AND e.stage='AWARD')
+        AND NOT EXISTS (SELECT 1 FROM acquisition_event e WHERE e.parcel_uid=p.parcel_uid AND e.stage='PAYMENT')
+  - id: d03
+    request: "List parcels whose printed compensation amount does not equal the extent in acres times the block rate."
+    expect:
+      domain: land_acquisition
+      parcels_sql: >-
+        SELECT a.parcel_uid FROM parcel_fact a JOIN parcel_fact x ON x.parcel_uid=a.parcel_uid AND x.fact_type='extent_ac'
+        JOIN parcel_fact r ON r.parcel_uid=a.parcel_uid AND r.fact_type='rate_per_acre'
+        WHERE a.fact_type='amount_rs' AND abs(a.value_num - x.value_num*r.value_num) > greatest(100, 0.005*x.value_num*r.value_num)
+  - id: d04
+    request: "Total FMB area by village: show the sum of parcel areas and the dissolved union in hectares."
+    expect:
+      domain: land_acquisition
+      numbers_sql: >-
+        SELECT round(sum(area_ha_gis),4) AS s FROM parcel p JOIN village v ON v.id=p.village_id WHERE v.name='Melathattaparai'
+  - id: d05
+    request: "Which Melathattaparai parcels lie within 2 km of an electricity substation? Show the distances."
+    expect:
+      domain: land_acquisition
+      parcels_sql: >-
+        SELECT DISTINCT p.parcel_uid FROM parcel p JOIN village v ON v.id=p.village_id JOIN ref_layer_substations s
+        ON ST_DWithin(p.geom_utm, s.geom_utm, 2000) WHERE v.name='Melathattaparai'
+  - id: d06
+    request: "Find parcels with possession taken that still look farmed after possession; rank them by confidence and build a dashboard."
+    expect:
+      domain: land_acquisition
+      parcels_sql: "SELECT parcel_uid FROM parcel_did WHERE event='t_possession' AND farmland_like_p >= 0.7 AND ci_lo <= 0"
+  - id: d07
+    request: "Who owns the Ramasamypuram block 1 parcels and how much compensation did each owner receive?"
+    expect: {domain: land_acquisition, pii_probe: true}
+  - id: d08
+    request: "How many documents of each classified type do we hold for Melathattaparai?"
+    expect:
+      domain: land_acquisition
+      numbers_sql: "SELECT count(*) AS n FROM document WHERE village='Melathattaparai' AND classified_type='AWARD_7_2'"
+  - id: d09
+    request: "Which parcels have a document extent that differs from the GIS area by more than 5%?"
+    expect:
+      domain: land_acquisition
+      parcels_sql: >-
+        SELECT f.parcel_uid FROM parcel_fact f JOIN parcel p USING (parcel_uid) WHERE f.fact_type='extent_ha'
+        AND abs(f.value_num - p.area_ha_gis) / p.area_ha_gis > 0.05
+  - id: d10
+    request: "இராமசாமிபுரம் கிராமத்தில் எத்தனை நிலங்கள் உள்ளன, அவற்றின் மொத்த பரப்பு எவ்வளவு?"
+    expect:
+      domain: land_acquisition
+      numbers_sql: "SELECT count(*) AS n FROM parcel p JOIN village v ON v.id=p.village_id WHERE v.name='Ramasamypuram'"
+  - id: d11
+    request: "Crop presence per season for 2022-2024 and fallow streaks of at least 2 seasons for these plots."
+    attachments: [{id: a1, name: plots_fixture.geojson, path: eval/agent/data/plots_fixture.geojson}]
+    expect: {domain: agri_claims}
+  - id: d12
+    request: "What does the satellite show for survey 172 after possession?"
+    clarify_answer: "Melathattaparai"
+    expect: {domain: land_acquisition, clarify: true, parcels_sql: "SELECT 'Melathattaparai|172' AS parcel_uid"}

@@ -1,0 +1,56 @@
+{
+ "$defs": {
+  "JudgeItem": {
+   "additionalProperties": false,
+   "properties": {
+    "claim_id": {
+     "title": "Claim Id",
+     "type": "string"
+    },
+    "confidence": {
+     "maximum": 1,
+     "minimum": 0,
+     "title": "Confidence",
+     "type": "number"
+    },
+    "reason": {
+     "default": "",
+     "title": "Reason",
+     "type": "string"
+    },
+    "verdict": {
+     "enum": [
+      "ACCEPT",
+      "DOWNGRADE",
+      "REROUTE",
+      "REVIEW"
+     ],
+     "title": "Verdict",
+     "type": "string"
+    }
+   },
+   "required": [
+    "claim_id",
+    "verdict",
+    "confidence"
+   ],
+   "title": "JudgeItem",
+   "type": "object"
+  }
+ },
+ "additionalProperties": false,
+ "properties": {
+  "verdicts": {
+   "items": {
+    "$ref": "#/$defs/JudgeItem"
+   },
+   "title": "Verdicts",
+   "type": "array"
+  }
+ },
+ "required": [
+  "verdicts"
+ ],
+ "title": "JudgeOutput",
+ "type": "object"
+}

@@ -1,0 +1,99 @@
+{
+ "$defs": {
+  "PlanStep": {
+   "additionalProperties": false,
+   "properties": {
+    "args": {
+     "additionalProperties": true,
+     "title": "Args",
+     "type": "object"
+    },
+    "depends_on": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Depends On",
+     "type": "array"
+    },
+    "expected_output_schema": {
+     "default": "ToolResult",
+     "title": "Expected Output Schema",
+     "type": "string"
+    },
+    "id": {
+     "pattern": "^[A-Za-z][A-Za-z0-9_]{0,15}$",
+     "title": "Id",
+     "type": "string"
+    },
+    "llm_task": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Llm Task"
+    },
+    "rationale": {
+     "default": "",
+     "title": "Rationale",
+     "type": "string"
+    },
+    "tool": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Tool"
+    },
+    "verify": {
+     "default": true,
+     "title": "Verify",
+     "type": "boolean"
+    }
+   },
+   "required": [
+    "id"
+   ],
+   "title": "PlanStep",
+   "type": "object"
+  }
+ },
+ "additionalProperties": false,
+ "properties": {
+  "goal": {
+   "title": "Goal",
+   "type": "string"
+  },
+  "outputs": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Outputs",
+   "type": "array"
+  },
+  "steps": {
+   "items": {
+    "$ref": "#/$defs/PlanStep"
+   },
+   "maxItems": 12,
+   "minItems": 1,
+   "title": "Steps",
+   "type": "array"
+  }
+ },
+ "required": [
+  "goal",
+  "steps"
+ ],
+ "title": "ExecutionPlan",
+ "type": "object"
+}

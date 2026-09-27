@@ -1,0 +1,39 @@
+# Document-level fallback event dates for T3.6 event windows (owner: eo-engineer).
+# Used until P2 extraction provides per-parcel acquisition_event dates. Source: land-domain-knowledge §11
+# (dates read from sample pages). The document table (document.doc_date / classified_type) was checked on
+# 2026-09-26 but is NOT used: classification is being rebuilt, and e.g. SEC31_GAZETTE dates run to 2025
+# (mode 2024-11-21, almost all tagged Allikulam), which contradicts the Oct-Nov 2022 gazette series.
+# Every window therefore carries date_precision and a caveat; windows are signals needing field verification.
+version: events-fallback-v1
+defaults:
+  t_3_1:
+    date: 2022-10-28          # first s.3(1) gazette of the series 28.10 / 03.11 / 16.11 / 24.11 / 28.11.2022
+    range: [2022-10-28, 2022-11-28]
+    precision: series_start
+    source: "land-domain-knowledge §11: s.3(1) gazettes 28.10.2022 - 28.11.2022"
+  t_award:
+    date: 2024-01-01          # awards and Form E ran from 2024 to early 2025
+    range: [2024-01-01, 2025-03-31]
+    precision: year
+    source: "land-domain-knowledge §11: awards and Form E 2024 to early 2025"
+  t_possession:
+    date: 2025-03-21          # latest known LDR handover date (Melathattaparai Block 2)
+    range: [2025-02-27, 2025-03-31]
+    precision: fallback
+    source: "land-domain-knowledge §11: LDR Melathattaparai Block 2 (surveys 233/235) 21.03.2025"
+villages:
+  Allikulam:
+    t_possession:
+      date: 2025-02-27
+      precision: day
+      source: "land-domain-knowledge §11: Allikulam Block 1 proceedings dated 27.02.2025 (applied village-wide as fallback)"
+  Melathattaparai:
+    t_possession:
+      date: 2025-03-21
+      precision: day
+      source: "land-domain-knowledge §11: LDR Melathattaparai Block 2, surveys 233/235, handed over 21.03.2025 (village-wide fallback)"
+parcels:                      # exact document dates for specific parcels (still document-level, pre-P2)
+  "Melathattaparai|233":
+    t_possession: {date: 2025-03-21, precision: day, source: "LDR Melathattaparai Block 2 surveys 233/235 (§11)"}
+  "Melathattaparai|235":
+    t_possession: {date: 2025-03-21, precision: day, source: "LDR Melathattaparai Block 2 surveys 233/235 (§11)"}

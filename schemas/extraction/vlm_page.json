@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nilasaatchi.local/schemas/extraction/vlm_page.json",
+  "title": "VlmPageTranscription",
+  "description": "Raw-cell whole-page transcription returned by the table_read_pii route (D-010). Strings only; all parsing happens in pipeline/normalize.",
+  "type": "object",
+  "properties": {
+    "title": {"type": ["string", "null"]},
+    "header": {"type": ["object", "null"], "properties": {
+      "village": {"type": ["string", "null"]}, "taluk": {"type": ["string", "null"]},
+      "unit_no": {"type": ["string", "null"]}, "block_no": {"type": ["string", "null"]},
+      "doc_no": {"type": ["string", "null"]}, "doc_date": {"type": ["string", "null"]}}},
+    "handwritten": {"type": ["boolean", "null"]},
+    "legibility": {"type": ["string", "null"]},
+    "tables": {"type": "array", "items": {"type": "object", "properties": {
+      "columns": {"type": "array", "items": {"type": ["string", "null"]}},
+      "rows": {"type": "array", "items": {"type": "array", "items": {"type": ["string", "number", "null"]}}}},
+      "required": ["rows"]}}
+  },
+  "required": ["tables"]
+}

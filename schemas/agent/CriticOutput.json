@@ -1,0 +1,59 @@
+{
+ "$defs": {
+  "CriticCheck": {
+   "additionalProperties": false,
+   "properties": {
+    "args": {
+     "additionalProperties": true,
+     "title": "Args",
+     "type": "object"
+    },
+    "tool": {
+     "title": "Tool",
+     "type": "string"
+    }
+   },
+   "required": [
+    "tool"
+   ],
+   "title": "CriticCheck",
+   "type": "object"
+  },
+  "CriticItem": {
+   "additionalProperties": false,
+   "properties": {
+    "check": {
+     "$ref": "#/$defs/CriticCheck"
+    },
+    "claim_id": {
+     "title": "Claim Id",
+     "type": "string"
+    },
+    "hypothesis": {
+     "title": "Hypothesis",
+     "type": "string"
+    }
+   },
+   "required": [
+    "claim_id",
+    "hypothesis",
+    "check"
+   ],
+   "title": "CriticItem",
+   "type": "object"
+  }
+ },
+ "additionalProperties": false,
+ "properties": {
+  "challenges": {
+   "items": {
+    "$ref": "#/$defs/CriticItem"
+   },
+   "maxItems": 6,
+   "title": "Challenges",
+   "type": "array"
+  }
+ },
+ "title": "CriticOutput",
+ "type": "object"
+}

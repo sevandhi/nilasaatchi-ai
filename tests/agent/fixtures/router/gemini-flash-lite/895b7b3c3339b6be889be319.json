@@ -1,0 +1,12 @@
+{
+ "error": {
+  "kind": "timeout",
+  "message": "timeout (408): litellm.Timeout: Connection timed out after None seconds.",
+  "status": 408
+ },
+ "key": "895b7b3c3339b6be889be3198a18e0008c714a7743d5028875eeedfac4e05a1e",
+ "kind": "chat",
+ "latency_ms": 20189,
+ "model_id": "gemini-flash-lite",
+ "model_name": "gemini-3.5-flash-lite"
+}

@@ -1,0 +1,255 @@
+{
+ "$defs": {
+  "Attempt": {
+   "additionalProperties": false,
+   "properties": {
+    "by": {
+     "title": "By",
+     "type": "string"
+    },
+    "error": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Error"
+    },
+    "latency_ms": {
+     "default": 0,
+     "title": "Latency Ms",
+     "type": "integer"
+    },
+    "n": {
+     "title": "N",
+     "type": "integer"
+    },
+    "outcome": {
+     "title": "Outcome",
+     "type": "string"
+    },
+    "reason": {
+     "default": "",
+     "title": "Reason",
+     "type": "string"
+    }
+   },
+   "required": [
+    "n",
+    "by",
+    "outcome"
+   ],
+   "title": "Attempt",
+   "type": "object"
+  }
+ },
+ "additionalProperties": false,
+ "properties": {
+  "actual_cost_usd": {
+   "default": 0.0,
+   "title": "Actual Cost Usd",
+   "type": "number"
+  },
+  "args": {
+   "additionalProperties": true,
+   "title": "Args",
+   "type": "object"
+  },
+  "attempts": {
+   "items": {
+    "$ref": "#/$defs/Attempt"
+   },
+   "title": "Attempts",
+   "type": "array"
+  },
+  "confidence": {
+   "anyOf": [
+    {
+     "type": "number"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Confidence"
+  },
+  "depends_on": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Depends On",
+   "type": "array"
+  },
+  "ended_at": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Ended At"
+  },
+  "error": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Error"
+  },
+  "excluded": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Excluded",
+   "type": "array"
+  },
+  "id": {
+   "title": "Id",
+   "type": "string"
+  },
+  "latency_ms": {
+   "default": 0,
+   "title": "Latency Ms",
+   "type": "integer"
+  },
+  "llm_task": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Llm Task"
+  },
+  "model_id": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Model Id"
+  },
+  "n_rows": {
+   "anyOf": [
+    {
+     "type": "integer"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "N Rows"
+  },
+  "output_ref": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Output Ref"
+  },
+  "shadow_cost_usd": {
+   "default": 0.0,
+   "title": "Shadow Cost Usd",
+   "type": "number"
+  },
+  "started_at": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Started At"
+  },
+  "status": {
+   "default": "pending",
+   "enum": [
+    "pending",
+    "running",
+    "ok",
+    "failed",
+    "skipped"
+   ],
+   "title": "Status",
+   "type": "string"
+  },
+  "summary": {
+   "default": "",
+   "title": "Summary",
+   "type": "string"
+  },
+  "tokens_in": {
+   "default": 0,
+   "title": "Tokens In",
+   "type": "integer"
+  },
+  "tokens_out": {
+   "default": 0,
+   "title": "Tokens Out",
+   "type": "integer"
+  },
+  "tool": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Tool"
+  },
+  "vendor": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Vendor"
+  },
+  "verify": {
+   "default": true,
+   "title": "Verify",
+   "type": "boolean"
+  }
+ },
+ "required": [
+  "id"
+ ],
+ "title": "StepRecord",
+ "type": "object"
+}

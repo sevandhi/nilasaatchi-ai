@@ -1,0 +1,342 @@
+# NilaSaatchi AI — model registry and routing policy.
+# Source: `free-model-router` skill registry seed (research values 2026-09-26).
+# `make doctor` re-probes every entry and writes data/doctor.json; it NEVER edits this file.
+# Changing a PII-eligibility flag (trains_on_free_tier) requires the user's approval.
+#
+# trains_on_free_tier semantics (fail closed):
+#   false               -> may receive PII
+#   false_if_opted_out  -> false only when env[optout_env] == "true", otherwise true
+#   true | unknown | anything else -> treated as true (PSEUDO/PUBLIC only)
+#
+# list_price_per_mtok is used only for SHADOW cost (actual cost is $0 on free tiers).
+# Prices other than gemini-flash-lite are approximations from public price lists and are
+# marked `approx`; update them from the provider pricing pages.
+
+version: 1
+
+router:
+  weights:                 # plan.md §5.6
+    capability: 0.35
+    confidence: 0.25
+    latency: -0.15
+    shadow_cost: -0.10
+    quota_pressure: -0.15
+  latency_ref_ms: 10000    # p50 at/above this normalises to 1.0
+  cost_ref_usd: 0.01       # estimated per-call shadow cost at/above this normalises to 1.0
+  daily_reserve_fraction: 0.10   # keep 10% of each daily window for the demo
+  timeouts_s: {text: 20, image: 60, ocr: 60}
+  retries_per_model: 1     # retry once (deterministic jitter) on 429/5xx/timeout
+  breaker: {failures: 3, open_seconds: 60}
+  default_max_tokens: 1024
+  p50_min_samples: 3       # measured p50 used once this many OK calls are logged
+
+models:
+  - id: gemini-flash-lite          # planner, judge, presenter, critic, satellite teacher (PSEUDO/PUBLIC)
+    provider: gemini
+    model: gemini-3.5-flash-lite
+    fallback_model: gemini-3.1-flash-lite
+    vendor: google
+    weights: proprietary
+    modalities: [text, image, pdf]
+    json_schema: true
+    json_mode: json_schema
+    tools: true
+    trains_on_free_tier: true
+    cost_class: free
+    context_tokens: 1000000
+    limits: {rpd: 500, rpm: 15}                  # disputed; verify in AI Studio dashboard
+    list_price_per_mtok: {in: 0.10, out: 0.40}
+    p50_ms_default: 4000
+    expected_confidence: 0.80
+
+  - id: gemini-flash-lite-31       # D-036: satellite image panels (3.5 flash-lite took 70-86 s; 3.1 2.5-7.6 s)
+    provider: gemini
+    model: gemini-3.1-flash-lite                # no fallback_model: this id must never resolve to 3.5
+    vendor: google
+    weights: proprietary
+    modalities: [text, image, pdf]
+    json_schema: true
+    json_mode: json_schema
+    trains_on_free_tier: true
+    cost_class: free
+    context_tokens: 1000000
+    image_timeout_s: 120
+    limits: {rpd: 500, rpm: 15}                  # separate per-model free quota; verify in AI Studio
+    list_price_per_mtok: {in: 0.10, out: 0.40, approx: true}
+    p50_ms_default: 5000
+    expected_confidence: 0.78
+
+  - id: gemini-flash               # hard replans only
+    provider: gemini
+    model: gemini-3.8-flash
+    vendor: google
+    weights: proprietary
+    modalities: [text, image, pdf]
+    json_schema: true
+    json_mode: json_schema
+    trains_on_free_tier: true
+    cost_class: free
+    context_tokens: 1000000
+    limits: {rpd: 20}
+    list_price_per_mtok: {in: 0.30, out: 2.50, approx: true}
+    p50_ms_default: 3000
+    expected_confidence: 0.88
+
+  # D-018 (2026-09-26): mistral-ocr DISABLED — Mistral API needs a billing method even on the Free
+  # plan (limit 0 req/min), which breaks the free-only rule. Kept for reference; re-enable only with user approval.
+  # - id: mistral-ocr                # PII table second reader (direct /v1/ocr adapter)
+  #   provider: mistral_ocr
+  #   model: mistral-ocr-latest
+  #   vendor: mistral
+  #   weights: proprietary
+  #   modalities: [pdf, image]
+  #   output: markdown_html_tables_bboxes
+  #   trains_on_free_tier: false_if_opted_out     # P0: user must confirm the console opt-out
+  #   optout_env: MISTRAL_TRAINING_OPTOUT_CONFIRMED
+  #   cost_class: free
+  #   context_tokens: 0                           # page-based, no token context check
+  #   limits: {monthly_credit_usd: 10, usd_per_1k_pages: 4}
+  #   list_price_per_page_usd: 0.004
+  #   actual_cost_per_page_usd: 0.004             # draws on the $10 monthly credit (tracked)
+  #   p50_ms_default: 4000
+  #   expected_confidence: 0.85
+
+  - id: groq-qwen-vl               # text-to-SQL, JSON, cell re-read
+    provider: groq
+    model: qwen/qwen3.8-27b
+    vendor: alibaba-open
+    weights: open
+    modalities: [text, image]
+    json_schema: strict
+    json_mode: json_schema
+    tools: true
+    trains_on_free_tier: false
+    cost_class: free
+    context_tokens: 131072
+    limits: {rpm: 30, rpd: 1000, tpm: 8000, tpd: 200000, otpm: 1000}   # otpm: Groq 429 body, doctor 2026-09-26
+    min_image_px: 32                            # Groq 400 "Image must have at least 32 pixels" (doctor)
+    list_price_per_mtok: {in: 0.29, out: 0.59, approx: true}
+    p50_ms_default: 800
+    expected_confidence: 0.78
+
+  - id: groq-gpt-oss
+    provider: groq
+    model: openai/gpt-oss-120b
+    vendor: openai-open
+    weights: open
+    modalities: [text]
+    json_schema: strict
+    json_mode: json_schema
+    trains_on_free_tier: false
+    cost_class: free
+    context_tokens: 131072
+    limits: {rpd: 1000, tpd: 200000}
+    list_price_per_mtok: {in: 0.15, out: 0.75, approx: true}
+    p50_ms_default: 900
+    expected_confidence: 0.80
+
+  - id: cohere-command-a           # judge/critic fallback
+    provider: cohere
+    model: command-a-03-2025
+    vendor: cohere
+    weights: proprietary
+    modalities: [text]
+    json_mode: json_object
+    trains_on_free_tier: unknown                # treated as true -> PSEUDO/PUBLIC only
+    cost_class: free
+    context_tokens: 256000
+    limits: {monthly_calls: 1000, rpm: 20}
+    list_price_per_mtok: {in: 2.50, out: 10.00, approx: true}
+    p50_ms_default: 2500
+    expected_confidence: 0.75
+
+  - id: cohere-command-a-vision    # independent 2nd vision teacher / second opinion (PUBLIC satellite chips only)
+    provider: cohere
+    model: command-a-vision-07-2025
+    vendor: cohere
+    weights: proprietary
+    modalities: [text, image]
+    json_mode: json_object
+    trains_on_free_tier: unknown                # treated as true -> PSEUDO/PUBLIC only; never document crops
+    cost_class: free
+    context_tokens: 128000
+    limits: {monthly_calls: 1000, rpm: 20}      # shares the Cohere trial pool with cohere-command-a
+    list_price_per_mtok: {in: 2.50, out: 10.00, approx: true}
+    p50_ms_default: 5000
+    expected_confidence: 0.75
+
+  - id: local-qwen
+    provider: ollama
+    model: qwen3.5:4b
+    vendor: local
+    weights: open
+    modalities: [text]
+    json_mode: json_object
+    trains_on_free_tier: false
+    cost_class: local
+    context_tokens: 32768
+    list_price_per_mtok: {in: 0.0, out: 0.0}
+    p50_ms_default: 8000
+    expected_confidence: 0.55
+
+  # D-027/D-028: Bedrock (team 49, SSO profile from AWS_PROFILE, ap-south-1) via boto3 Converse.
+  # AWS does not train on customer data -> PII-OK. Spend is guarded globally (80% of
+  # AWS_SPEND_CAP_USD); only models in APPROVED_BEDROCK_MODELS (app/router/registry.py) load.
+  # Ministral 3 14B is visible but NOT approved: never add it.
+  - id: bedrock-ministral-8b         # primary PII table/cell reader (vision)
+    provider: bedrock
+    model: mistral.ministral-3-8b-instruct
+    region: ap-south-1
+    vendor: mistral-open
+    weights: open
+    modalities: [text, image]
+    json_mode: prompt                           # replies wrap JSON in ```json fences; extractor strips them
+    trains_on_free_tier: false
+    cost_class: capped_fallback
+    context_tokens: 128000
+    list_price_per_mtok: {in: 0.15, out: 0.15, approx: true}
+    actual_cost_is_shadow: true                 # real AWS spend; counted by the spend guard
+    p50_ms_default: 2900
+    expected_confidence: 0.80
+
+  - id: bedrock-ministral-3b         # classification / small JSON
+    provider: bedrock
+    model: mistral.ministral-3-3b-instruct
+    region: ap-south-1
+    vendor: mistral-open
+    weights: open
+    modalities: [text, image]
+    json_mode: prompt
+    trains_on_free_tier: false
+    cost_class: capped_fallback
+    context_tokens: 128000
+    list_price_per_mtok: {in: 0.10, out: 0.10, approx: true}
+    actual_cost_is_shadow: true
+    p50_ms_default: 1500
+    expected_confidence: 0.70
+
+embeddings:                     # app/router/embeddings.py (same AWS spend guard)
+  - {id: titan-embed-text-v2, provider: bedrock, model: "amazon.titan-embed-text-v2:0", kind: text, dims: 1024,
+     normalize: true, region: ap-south-1, cost_class: capped_fallback, trains_on_free_tier: false,
+     price_per_mtok_in: 0.02}                   # approx list price
+  - {id: titan-embed-image-v1, provider: bedrock, model: amazon.titan-embed-image-v1, kind: image, dims: 1024,
+     region: ap-south-1, cost_class: capped_fallback, trains_on_free_tier: false,
+     price_per_image_usd: 0.00006, price_per_mtok_in: 0.80}   # approx list price
+  - {id: bge-m3, provider: local, model: BAAI/bge-m3, kind: text, dims: 1024, normalize: true,
+     cost_class: local, trains_on_free_tier: false}           # fallback stub (FlagEmbedding not installed)
+
+engines:
+  - {id: paddle-ta, kind: ocr, lang: ta, local: true}
+  - {id: tesseract, kind: ocr, lang: tam+eng, local: true}
+  - {id: bge-m3, kind: embedding, local: true}
+
+# Task -> chain. `capability` doubles as the chain prior (higher = earlier). Ties are broken by
+# chain order. `requires` = input modalities the model must accept. `when` gates an entry on a
+# payload flag. `terminal` names the non-model step the caller takes when every model fails.
+# `typical_tier` is the privacy tier the task usually carries (used by `make doctor`).
+tasks:
+  plan:
+    requires: [text]
+    typical_tier: PSEUDO
+    chain:
+      - {model: gemini-flash-lite, capability: 1.00}
+      - {model: gemini-flash, capability: 0.95, when: hard_replan}
+      - {model: groq-gpt-oss, capability: 0.72}       # open-weight, strict JSON schema, separate Groq TPD
+      - {model: groq-qwen-vl, capability: 0.80}
+      - {model: cohere-command-a, capability: 0.75}
+      - {model: local-qwen, capability: 0.50}
+    terminal: clarify_user
+  sql: &structured
+    requires: [text]
+    typical_tier: PII
+    chain:
+      - {model: groq-qwen-vl, capability: 1.00}
+      - {model: groq-gpt-oss, capability: 0.90}
+      - {model: bedrock-ministral-8b, capability: 0.60}
+      - {model: local-qwen, capability: 0.50}
+    terminal: template_or_clarify
+  tool_args: *structured
+  json_repair: *structured
+  table_read_pii:                 # caller runs local cell OCR first; router handles the hosted steps
+    requires: [image]
+    typical_tier: PII
+    chain:                        # D-018 mistral-ocr removed; D-027 Bedrock Ministral 8B primary
+      - {model: bedrock-ministral-8b, capability: 1.00}
+      - {model: groq-qwen-vl, capability: 0.80}
+    terminal: review_queue
+  table_second_read_pii:          # D-032: independent second read (different crop/zoom + prompt variant); Groq daily quota too small for Stage B
+    requires: [image]
+    typical_tier: PII
+    chain:
+      - {model: bedrock-ministral-8b, capability: 1.00}
+      - {model: groq-qwen-vl, capability: 0.80}
+    terminal: review_queue
+  cell_reread:
+    requires: [image]
+    typical_tier: PII
+    chain:
+      - {model: bedrock-ministral-8b, capability: 1.00}
+      - {model: groq-qwen-vl, capability: 0.80}
+    terminal: review_queue
+  critic:                         # producer's vendor is excluded (critic independence)
+    requires: [text]
+    typical_tier: PSEUDO
+    exclude_producer_vendor: true
+    chain:
+      - {model: gemini-flash-lite, capability: 1.00}
+      - {model: groq-qwen-vl, capability: 0.90}
+      - {model: cohere-command-a, capability: 0.85}
+      - {model: groq-gpt-oss, capability: 0.70}
+      - {model: gemini-flash-lite-31, capability: 0.65}
+    terminal: deterministic_only
+  judge:
+    requires: [text]
+    typical_tier: PSEUDO
+    chain:
+      - {model: gemini-flash-lite, capability: 1.00}
+      - {model: cohere-command-a, capability: 0.85}
+      - {model: groq-gpt-oss, capability: 0.70}
+      - {model: gemini-flash-lite-31, capability: 0.65}
+    terminal: deterministic_only_downgrade
+  present:
+    requires: [text]
+    typical_tier: PSEUDO
+    chain:
+      - {model: gemini-flash-lite, capability: 1.00}
+      - {model: groq-qwen-vl, capability: 0.80}
+      - {model: groq-gpt-oss, capability: 0.70}
+      - {model: gemini-flash-lite-31, capability: 0.65}
+    terminal: template_narrative
+  satellite_teacher:              # teacher #1 = Gemini 3.1 (D-036); consensus with teacher #2 (Cohere Vision)
+    requires: [image]
+    typical_tier: PUBLIC
+    strict_order: true
+    chain:
+      - {model: gemini-flash-lite-31, capability: 1.00}
+      - {model: cohere-command-a-vision, capability: 0.85}
+      - {model: groq-qwen-vl, capability: 0.80}
+    terminal: field_verification_queue
+  satellite_second_opinion:       # independent of the Gemini teacher: a different vendor first.
+    requires: [image]             # D-036: strict order; no Bedrock (avoid accidental spend)
+    typical_tier: PUBLIC
+    strict_order: true
+    chain:
+      - {model: cohere-command-a-vision, capability: 1.00}
+      - {model: groq-qwen-vl, capability: 0.90}
+      - {model: gemini-flash-lite-31, capability: 0.70}
+    terminal: field_verification_queue
+  classify_page:                  # D-030: page-1 image classification when the text layer/Tesseract text is poor
+    requires: [image]
+    typical_tier: PII
+    chain:
+      - {model: bedrock-ministral-8b, capability: 1.00}
+      - {model: groq-qwen-vl, capability: 0.80}
+    terminal: review_queue
+  classify_text:
+    requires: [text]
+    typical_tier: PII
+    chain:
+      - {model: bedrock-ministral-3b, capability: 1.00}
+      - {model: groq-gpt-oss, capability: 0.90}
+      - {model: local-qwen, capability: 0.60}
+    terminal: review_queue

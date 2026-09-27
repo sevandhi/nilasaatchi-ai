@@ -1,0 +1,33 @@
+.env
+.env.*
+!.env.example
+data/
+Dataset/
+Documents/
+*.sqlite
+__pycache__/
+.venv/
+web/node_modules/
+docs/screens/raw/
+eval/golden/pages/
+eval/golden/mini.jsonl
+eval/heldout/pages/
+eval/heldout/labels.jsonl
+eval/dev/pages/
+eval/dev/labels.jsonl
+eval/dev2/pages/
+eval/dev2/labels.jsonl
+
+# reference material (not part of the working app) and demo bundles
+ref/data/
+dist/
+# build / test output
+web/dist/
+web/test-results/
+web/playwright-report*/
+.hypothesis/
+.pytest_cache/
+.ruff_cache/
+*.log
+eval/heldout2/pages/
+eval/heldout2/labels.jsonl

@@ -1,0 +1,59 @@
+[project]
+name = "nilasaatchi"
+version = "0.1.0"
+description = "NilaSaatchi AI — Paper vs Planet: agentic cross-examination of land-acquisition documents against satellite evidence"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "pydantic>=2.9",
+  "pydantic-settings>=2.5",
+  "python-dotenv>=1.0",
+  "httpx>=0.27",
+  "pyyaml>=6.0",
+  "psycopg[binary]>=3.2",
+  "sqlalchemy>=2.0",
+  "numpy>=2.0",
+  "pandas>=2.2",
+  "rich>=13.0",
+  "tenacity>=9.0",
+  "python-multipart>=0.0.32",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.3", "pytest-asyncio>=0.24", "hypothesis>=6.100", "ruff>=0.7", "mypy>=1.13", "vcrpy>=6.0"]
+agent = [
+    "langgraph>=1.2",
+    "boto3>=1.35",
+    "litellm>=1.10",
+    "google-genai>=1.0",
+    "mistralai>=1.0",
+    "cohere>=5.0",
+    "fastapi>=0.115",
+    "uvicorn>=0.32",
+    "sse-starlette>=2.1",
+    "sqlglot>=25.0",
+    "jsonschema>=4.23",
+    "langgraph-checkpoint-postgres>=2.0",
+    "psycopg-pool>=3.2",
+    "playwright>=1.47",
+]
+geo = ["geopandas>=1.0", "pyarrow>=17.0", "shapely>=2.0", "pyproj>=3.6", "rasterio>=1.4", "rio-cogeo>=5.0", "pystac-client>=0.8", "planetary-computer>=1.0", "scipy>=1.13", "lightgbm>=4.5", "pgvector>=0.3", "geoalchemy2>=0.15"]
+ocr = ["paddleocr>=3.0", "paddlepaddle>=3.0", "pytesseract>=0.3", "pypdfium2>=4.30", "opencv-python-headless>=4.10", "rapidfuzz>=3.10", "indic-transliteration>=2.3", "pillow>=10.4"]
+# Phase 7 read-only AWS Lambda cloud demo (app/cloud, D-067/T6.6). duckdb backs list-endpoint
+# filtering over the exported parquet snapshot; mangum adapts the FastAPI app for Lambda. Kept as
+# its own group so local dev picks it up via `uv run`, while scripts/cloud_package.sh installs only
+# the minimal runtime deps (fastapi, mangum, duckdb) into the actual Lambda zip.
+cloud = ["duckdb>=1.1", "mangum>=0.19"]
+
+[tool.uv]
+default-groups = ["dev", "agent", "geo", "ocr", "cloud"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["live: calls real external APIs (skipped unless LIVE=1)", "db: needs the PostGIS container"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.setuptools.packages.find]
+include = ["app*", "pipeline*", "planet*"]

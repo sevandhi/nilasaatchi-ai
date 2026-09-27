@@ -1,0 +1,75 @@
+{
+ "$defs": {
+  "PlannerStep": {
+   "description": "One step as the planner model writes it: a single required ``tool`` field whose value is a catalog tool\nor an llm task (the per-pack JSON schema restricts it with an enum, see ``planner_schema``). Converted to a\n``PlanStep`` (tool | llm_task) by ``PlannerOutput.to_plan``. Unknown extra keys from the model are ignored.",
+   "properties": {
+    "args": {
+     "additionalProperties": true,
+     "title": "Args",
+     "type": "object"
+    },
+    "depends_on": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Depends On",
+     "type": "array"
+    },
+    "id": {
+     "pattern": "^[A-Za-z][A-Za-z0-9_]{0,15}$",
+     "title": "Id",
+     "type": "string"
+    },
+    "rationale": {
+     "default": "",
+     "title": "Rationale",
+     "type": "string"
+    },
+    "tool": {
+     "title": "Tool",
+     "type": "string"
+    },
+    "verify": {
+     "default": true,
+     "title": "Verify",
+     "type": "boolean"
+    }
+   },
+   "required": [
+    "id",
+    "tool"
+   ],
+   "title": "PlannerStep",
+   "type": "object"
+  }
+ },
+ "description": "What the planner model must return (JSON-schema validated by the router, repaired once, then fallback).",
+ "properties": {
+  "goal": {
+   "title": "Goal",
+   "type": "string"
+  },
+  "outputs": {
+   "items": {
+    "type": "string"
+   },
+   "title": "Outputs",
+   "type": "array"
+  },
+  "steps": {
+   "items": {
+    "$ref": "#/$defs/PlannerStep"
+   },
+   "maxItems": 12,
+   "minItems": 1,
+   "title": "Steps",
+   "type": "array"
+  }
+ },
+ "required": [
+  "goal",
+  "steps"
+ ],
+ "title": "PlannerOutput",
+ "type": "object"
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nilasaatchi.local/schemas/extraction/price_rate.json",
+  "title": "PriceRate",
+  "description": "DLPNC / SLPNC / land-value fixation key facts. Rates are per block (§11b).",
+  "type": "object",
+  "properties": {
+    "record_type": {"const": "price_rate"},
+    "committee_level": {"enum": ["district", "state", null]},
+    "rate_per_acre": {"type": ["integer", "null"]},
+    "extent_ha": {"type": ["number", "null"]}, "extent_ac": {"type": ["number", "null"]},
+    "poramboke_ha": {"type": ["number", "null"]}, "poramboke_ac": {"type": ["number", "null"]},
+    "final_patta_ha": {"type": ["number", "null"]}, "final_patta_ac": {"type": ["number", "null"]},
+    "villages": {"type": "array", "items": {"type": "string"}},
+    "survey_refs": {"type": ["string", "null"]},
+    "raw": {"type": "object"},
+    "evidence": {"$ref": "evidence.json"}
+  },
+  "required": ["record_type", "evidence"]
+}

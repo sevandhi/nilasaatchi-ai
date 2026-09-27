@@ -1,0 +1,35 @@
+# Thresholds (owner: gis-engineer). `python -m pipeline.match` syncs `lifecycle` and `match`
+# into the `threshold` table, which the lifecycle views read (D-052).
+match:
+  tau: 0.80            # accept when top score >= tau
+  delta: 0.10          # ... and margin to runner-up >= delta
+  block_level_score: 0.50   # confidence of document-level (no survey) events linked to a whole unit/block
+  reresolve_penalty: 0.05   # village re-resolved from unit+block+survey (scheme-labelled headers)
+  scheme_village_names: [Allikulam]   # header names that denote the scheme, not necessarily the village
+lifecycle:
+  stall_days:
+    award_to_payment: 60
+    payment_to_possession: 30
+    possession_to_mutation: 90
+discrepancy:
+  extent_mismatch_pct: 5
+findings:
+  pv3:
+    season_scope: rabi
+    farmland_like_min: 0.7
+  pv4:
+    min_months_since_possession: 6
+  pv1:
+    min_irrigated_years: 2        # of the 3 agricultural years before 3(1)
+    lookback_years: 3
+  extent:
+    unit_error_ratio: 10          # doc/GIS ratio beyond 10x (or below 1/10) -> EXTRACTION_ERROR
+  compensation:
+    tolerance_rs: 1               # per row, after acre rounding (see rules.compensation)
+    rate_agreement: 0.005         # rows within 0.5 % of the modal rate define the document rate
+    min_rows_for_rate: 3
+  doc_version:
+    tolerance_ha: 0.01
+    min_villages_on_page: 5       # a scheme-wide village table
+  fmb_quality:
+    min_overlap_ha: 0.001

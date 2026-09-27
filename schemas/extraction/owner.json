@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nilasaatchi.local/schemas/extraction/owner.json",
+  "title": "Owner",
+  "type": "object",
+  "properties": {
+    "raw": {"type": "string"},
+    "name": {"type": "string"},
+    "relation": {"type": ["string", "null"], "enum": ["father", "husband", "mother", "care_of", null]},
+    "relation_name": {"type": ["string", "null"]},
+    "honorific": {"type": ["string", "null"]},
+    "legal_heirs": {"type": "boolean"},
+    "key": {"type": "string", "description": "ASCII matching key (Tamil → ISO-15919 → folded)"}
+  },
+  "required": ["raw", "name", "key"]
+}

@@ -1,0 +1,5 @@
+Blind audit of 50 parcel-seasons (qa-evaluator). Label each panel independently from the image only.
+Allowed qa_state values: cropped, irrigated_multi, perennial_veg, bare_fallow, cleared_or_built, water, insufficient_data.
+State definitions and the panel layout: prompts/satellite_teacher.md (sections 'The image' and 'States').
+Fill qa_state, qa_confidence (0-1) and qa_notes in index.csv; do not open data/s2/labels/ or the DB labels
+before finishing. Then run: python -m planet.classify.audit score

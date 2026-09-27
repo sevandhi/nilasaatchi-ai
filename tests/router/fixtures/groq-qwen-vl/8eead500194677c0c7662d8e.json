@@ -1,0 +1,26 @@
+{
+ "key": "8eead500194677c0c7662d8e5361b361c100bde0f93e0421685cf39c0abc8dc6",
+ "kind": "chat",
+ "latency_ms": 3839,
+ "model_id": "groq-qwen-vl",
+ "model_name": "qwen/qwen3.8-27b",
+ "response": {
+  "data": null,
+  "headers": {
+   "x-ratelimit-limit-requests": "1000",
+   "x-ratelimit-limit-tokens": "8000",
+   "x-ratelimit-remaining-requests": "992",
+   "x-ratelimit-remaining-tokens": "3077",
+   "x-ratelimit-reset-requests": "11m31.2s",
+   "x-ratelimit-reset-tokens": "36.922s"
+  },
+  "image_tokens": 0,
+  "json_mode_used": "json_schema",
+  "latency_ms": 3839,
+  "pages": 0,
+  "resolved_model": "qwen/qwen3.8-27b",
+  "text": "{\"sql\": \"SELECT COUNT(*) FROM parcel;\"}",
+  "tokens_in": 81,
+  "tokens_out": 12
+ }
+}

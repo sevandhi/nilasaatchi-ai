@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nilasaatchi.local/schemas/extraction/page_extraction.json",
+  "title": "PageExtraction",
+  "description": "Output of pipeline.extract for one page: headers with votes, typed records with evidence, self-consistency checks, confidence and escalation state.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "p2.v1"
+    },
+    "doc_id": {
+      "type": [
+        "integer",
+        "string",
+        "null"
+      ]
+    },
+    "page_no": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "page_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "image_sha": {
+      "type": "string"
+    },
+    "doc_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "doc_type_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "family": {
+      "enum": [
+        "parcel",
+        "village_totals",
+        "owner_amount",
+        "instrument",
+        "rate",
+        "prose"
+      ]
+    },
+    "privacy_tier": {
+      "enum": [
+        "PII",
+        "PSEUDO",
+        "PUBLIC"
+      ]
+    },
+    "header": {
+      "type": "object",
+      "properties": {
+        "village": {
+          "$ref": "header_field.json"
+        },
+        "taluk": {
+          "$ref": "header_field.json"
+        },
+        "unit_no": {
+          "$ref": "header_field.json"
+        },
+        "block_no": {
+          "$ref": "header_field.json"
+        },
+        "doc_no": {
+          "$ref": "header_field.json"
+        },
+        "doc_date": {
+          "$ref": "header_field.json"
+        },
+        "ref_doc_no": {
+          "$ref": "header_field.json"
+        },
+        "ref_doc_date": {
+          "$ref": "header_field.json"
+        },
+        "gazette_no": {
+          "$ref": "header_field.json"
+        },
+        "gazette_date": {
+          "$ref": "header_field.json"
+        },
+        "rate_per_acre": {
+          "$ref": "header_field.json"
+        },
+        "handover_date": {
+          "$ref": "header_field.json"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "header_field.json"
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "parcel_row.json"
+          },
+          {
+            "$ref": "form_f.json"
+          },
+          {
+            "$ref": "village_totals.json"
+          },
+          {
+            "$ref": "payment_instrument.json"
+          },
+          {
+            "$ref": "price_rate.json"
+          },
+          {
+            "$ref": "errata_correction.json"
+          }
+        ]
+      }
+    },
+    "printed_totals": {
+      "type": "object"
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "result": {
+            "enum": [
+              "pass",
+              "fail",
+              "skip"
+            ]
+          },
+          "detail": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "result"
+        ]
+      }
+    },
+    "self_consistency": {
+      "enum": [
+        "pass",
+        "fail",
+        "n/a"
+      ]
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "reads": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "status": {
+      "enum": [
+        "accepted",
+        "second_read_accepted",
+        "needs_human",
+        "failed",
+        "accepted_unverified"
+      ]
+    },
+    "review_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "review_queue": {
+      "type": "boolean"
+    },
+    "queue_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "review reasons incl. owner_sample (D-032)"
+    },
+    "second_read_decision": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "second_improved",
+        "reads_agree",
+        "kept_first",
+        null
+      ]
+    },
+    "owner_reads": {
+      "type": "object",
+      "properties": {
+        "vlm_agreed": {
+          "type": "integer"
+        },
+        "vlm_single": {
+          "type": "integer"
+        }
+      }
+    },
+    "confidence_cap": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "D-033: confidence capped at 0.7 (accepted without verification)"
+    }
+  },
+  "required": [
+    "schema_version",
+    "image_sha",
+    "family",
+    "privacy_tier",
+    "header",
+    "records",
+    "checks",
+    "self_consistency",
+    "confidence",
+    "status"
+  ]
+}

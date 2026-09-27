@@ -1,0 +1,74 @@
+{
+ "additionalProperties": false,
+ "properties": {
+  "id": {
+   "title": "Id",
+   "type": "string"
+  },
+  "kind": {
+   "anyOf": [
+    {
+     "enum": [
+      "pdf",
+      "image",
+      "geojson",
+      "csv",
+      "text"
+     ],
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Kind"
+  },
+  "media_type": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Media Type"
+  },
+  "name": {
+   "default": "",
+   "title": "Name",
+   "type": "string"
+  },
+  "path": {
+   "anyOf": [
+    {
+     "type": "string"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Path"
+  },
+  "size_bytes": {
+   "anyOf": [
+    {
+     "type": "integer"
+    },
+    {
+     "type": "null"
+    }
+   ],
+   "default": null,
+   "title": "Size Bytes"
+  }
+ },
+ "required": [
+  "id"
+ ],
+ "title": "Attachment",
+ "type": "object"
+}

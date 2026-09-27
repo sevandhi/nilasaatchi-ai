@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nilasaatchi.local/schemas/extraction/payment_instrument.json",
+  "title": "PaymentInstrument",
+  "description": "Demand draft / disbursement / court deposit line. Demand drafts carry no survey, owner or village (§11b): link by amount and date only.",
+  "type": "object",
+  "properties": {
+    "record_type": {"const": "payment_instrument"},
+    "instrument_no": {"type": ["string", "null"]},
+    "amount_rs": {"type": ["integer", "null"], "minimum": 0},
+    "payee": {"type": ["string", "null"]},
+    "payee_kind": {"enum": ["court", "owner", "treasury", null]},
+    "bank": {"type": ["string", "null"]},
+    "instrument_date": {"type": ["string", "null"]},
+    "raw": {"type": "object"},
+    "evidence": {"$ref": "evidence.json"}
+  },
+  "required": ["record_type", "evidence"]
+}

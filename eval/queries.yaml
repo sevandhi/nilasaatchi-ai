@@ -1,0 +1,254 @@
+# Demo requests + unseen evaluation suite (phase5 T5.8, 25 queries under `unseen:`). NEVER copy these into app/, pipeline/ or web/.
+# Run: PYTHONPATH=. uv run python -m eval.agent.run_unseen --kg real|fixture [--only u01,...]
+# Reference answers are computed by the harness from `expect.numbers_sql` / `expect.parcels_sql` against the chosen KG at run time.
+# expect.numbers_sql: every value of the first row must appear in a KPI/table cell (0.5% tolerance).
+# expect.parcels_sql: returned parcel_uids must appear in workspace tables (recall reported).
+# polygons_sql (agri): the harness turns the rows (plot_id, geojson) into a temporary GeoJSON upload.
+# Rubric (0-4, scored by qa): data correct / right views / verification visible / trace complete.
+version: 1
+# ---------------------------------------------------------------- demo requests (plan.md §4.2)
+# `queries` = the demo chips served by GET /examples (app/api/routers/examples.py reads id/text/category).
+# They are the plan's demo script, not the unseen suite; the unseen suite below is never shown as chips.
+queries:
+  - id: paper-vs-planet-233
+    category: demo
+    text: "Verify Melathattaparai survey 233: what do the documents claim, and what does the satellite show?"
+  - id: park-sweep-post-possession
+    category: demo
+    text: "Find parcels whose behaviour changed versus never-acquired farmland after possession; rank them by confidence and build a dashboard."
+  - id: landuse-change-notification-award
+    category: demo
+    text: "List parcels whose land use changed between 3(1) notification and award."
+  - id: document-drift
+    category: demo
+    text: "Do the proposal, the sanction (GO/AS) and the GIS layer agree on village extents?"
+  - id: upload-award
+    category: demo
+    text: "Extract this award, match its rows to parcels and cross-examine each parcel against the satellite record."
+  - id: agri-reuse
+    category: demo
+    text: "Crop presence per season 2023-25 and fallow streaks of at least 2 seasons for these plots."
+# ---------------------------------------------------------------- unseen suite (phase5 T5.8)
+unseen:
+  # ---------------------------------------------------------------- Task 2 comparables (5)
+  - id: u01
+    category: task2
+    request: "Rank Peroorani parcels by distance to the nearest major road and list the 10 farthest."
+    expect:
+      tools_any: [spatial_query, sql_query]
+      parcels_sql: >-
+        SELECT p.parcel_uid FROM parcel p JOIN village v ON v.id=p.village_id WHERE v.name='Peroorani'
+        ORDER BY p.dist_major_road_m DESC NULLS LAST LIMIT 10
+  - id: u02
+    category: task2
+    request: "What is the dissolved land area per block in Keelathattaparai, with the plain sum next to it?"
+    expect:
+      tools_any: [spatial_query]
+      numbers_sql: >-
+        SELECT round(geo_area_ha(ST_Union(p.geom))::numeric, 4) AS union_ha FROM parcel p JOIN village v
+        ON v.id=p.village_id WHERE v.name='Keelathattaparai' AND p.block_id = (SELECT min(block_id) FROM parcel p2
+        JOIN village v2 ON v2.id=p2.village_id WHERE v2.name='Keelathattaparai')
+  - id: u03
+    category: task2
+    request: "Which Allikulam parcels have a mean slope above 0.5 degrees?"
+    expect:
+      tools_any: [spatial_query, sql_query]
+      parcels_sql: >-
+        SELECT p.parcel_uid FROM parcel p JOIN village v ON v.id=p.village_id WHERE v.name='Allikulam'
+        AND (p.raster_stats->>'slope_mean')::float > 0.5
+  - id: u04
+    category: task2
+    request: "How many parcels in Umarikottai are within 5 km of a railway station?"
+    expect:
+      tools_any: [spatial_query, sql_query]
+      numbers_sql: >-
+        SELECT count(DISTINCT p.parcel_uid) AS n FROM parcel p JOIN village v ON v.id=p.village_id
+        JOIN ref_layer_rail_stations s ON ST_DWithin(p.geom_utm, s.geom_utm, 5000) WHERE v.name='Umarikottai'
+  - id: u05
+    category: task2
+    request: "List FMB parcels that overlap a neighbouring parcel by more than 0.1 ha, with the overlap area."
+    expect:
+      tools_any: [sql_query]
+      parcels_sql: "SELECT uid_a AS parcel_uid FROM fmb_qa_overlap WHERE overlap_ha > 0.1"
+  # ---------------------------------------------------------------- Paper vs Planet (6)
+  - id: u06
+    category: paper_vs_planet
+    request: "In Allikulam block 4, which parcels still behave like active farmland after possession compared with the control farms?"
+    expect:
+      tools_any: [paper_vs_planet]
+      parcels_sql: >-
+        SELECT d.parcel_uid FROM parcel_did d JOIN parcel p USING (parcel_uid) JOIN village v ON v.id=p.village_id
+        WHERE v.name='Allikulam' AND p.block_id=4 AND d.event='t_possession' AND d.farmland_like_p >= 0.7 AND d.ci_lo <= 0
+  - id: u07
+    category: paper_vs_planet
+    request: "Are any Peroorani parcels recorded as wet land that the satellite never saw irrigated before notification?"
+    expect: {tools_any: [paper_vs_planet]}
+  - id: u08
+    category: paper_vs_planet
+    request: "Show Keelathattaparai parcels whose land use changed from bare to trees or buildings between the 3(1) notification and the award."
+    expect:
+      tools_any: [paper_vs_planet]
+      parcels_sql: >-
+        SELECT w1.parcel_uid FROM parcel_event_window w1 JOIN parcel_event_window w2 USING (parcel_uid)
+        JOIN parcel p USING (parcel_uid) JOIN village v ON v.id=p.village_id WHERE v.name='Keelathattaparai'
+        AND w1.window_name='pre_notification' AND w2.window_name='pending' AND w1.dominant_state='bare_fallow'
+        AND w2.dominant_state IN ('perennial_veg','cleared_or_built','irrigated_multi')
+  - id: u09
+    category: paper_vs_planet
+    request: "How much possessed land in Umarikottai has been idle for more than six months, by block, with road and substation access?"
+    expect: {tools_any: [paper_vs_planet, lifecycle_status]}
+  - id: u10
+    category: paper_vs_planet
+    request: "For Melathattaparai survey 175, compare the award classification with what the satellite saw in the three years before notification."
+    expect: {tools_any: [paper_vs_planet, evidence_pack, satellite_timeseries]}
+  - id: u11
+    category: paper_vs_planet
+    request: "Build evidence packs for the three most confident post-possession activity findings in South Silukanpatti."
+    expect: {tools_any: [paper_vs_planet, evidence_pack]}
+  # ---------------------------------------------------------------- lifecycle and drift (4)
+  - id: u12
+    category: lifecycle
+    request: "Which Allikulam parcels have an award but no recorded 3(2) notice?"
+    expect:
+      tools_any: [lifecycle_status, paper_vs_planet]
+      parcels_sql: >-
+        SELECT DISTINCT e.parcel_uid FROM acquisition_event e WHERE e.village='Allikulam' AND e.stage='AWARD'
+        AND e.parcel_uid IS NOT NULL AND NOT EXISTS (SELECT 1 FROM acquisition_event x WHERE x.parcel_uid=e.parcel_uid
+        AND x.stage='SEC_3_2')
+  - id: u13
+    category: lifecycle
+    request: "Give the stage funnel from notification to patta transfer for Peroorani and Umarikottai."
+    expect: {tools_any: [lifecycle_status]}
+  - id: u14
+    category: drift
+    request: "Do the Tamil proposal and the sanctioned GO/AS extents agree village by village, and where do they differ?"
+    expect: {tools_any: [sql_query, doc_retrieve, catalog_search]}
+  - id: u15
+    category: lifecycle
+    request: "List parcels that were exempted from acquisition but still show an award or a payment."
+    expect:
+      tools_any: [lifecycle_status, paper_vs_planet]
+      parcels_sql: >-
+        SELECT DISTINCT e.parcel_uid FROM acquisition_event e WHERE e.stage='EXEMPTION' AND e.parcel_uid IS NOT NULL
+        AND EXISTS (SELECT 1 FROM acquisition_event x WHERE x.parcel_uid=e.parcel_uid AND x.stage IN ('AWARD','PAYMENT'))
+  # ---------------------------------------------------------------- agri claims on new polygons (4)
+  - id: u16
+    category: agri
+    request: "Was a crop grown on these plots in rabi 2023-24?"
+    polygons_sql: >-
+      SELECT 'F-' || row_number() OVER (ORDER BY parcel_uid) AS plot_id,
+      ST_AsGeoJSON(ST_Transform(ST_Buffer(ST_PointOnSurface(geom_utm), 30), 4326), 7) AS geojson
+      FROM parcel WHERE parcel_uid IN (SELECT parcel_uid FROM parcel ORDER BY md5(parcel_uid) LIMIT 3)
+    expect: {domain: agri_claims, tools_any: [crop_presence]}
+  - id: u17
+    category: agri
+    request: "Which of these plots were left fallow for two or more consecutive seasons between 2021 and 2025?"
+    polygons_sql: >-
+      SELECT 'G-' || row_number() OVER (ORDER BY parcel_uid) AS plot_id,
+      ST_AsGeoJSON(ST_Transform(ST_Buffer(ST_PointOnSurface(geom_utm), 40), 4326), 7) AS geojson
+      FROM parcel WHERE parcel_uid IN (SELECT parcel_uid FROM parcel ORDER BY md5(parcel_uid || 'g') LIMIT 4)
+    expect: {domain: agri_claims, tools_any: [fallow_streak]}
+  - id: u18
+    category: agri
+    request: "Crop insurance check: for each plot, list the seasons with a crop from 2022 to 2024 and flag any plot with no crop at all."
+    polygons_sql: >-
+      SELECT 'H-' || row_number() OVER (ORDER BY parcel_uid) AS plot_id,
+      ST_AsGeoJSON(ST_Transform(ST_Buffer(ST_PointOnSurface(geom_utm), 25), 4326), 7) AS geojson
+      FROM parcel WHERE parcel_uid IN (SELECT parcel_uid FROM parcel ORDER BY md5(parcel_uid || 'h') LIMIT 2)
+    expect: {domain: agri_claims, tools_any: [crop_presence]}
+  - id: u19
+    category: agri
+    request: "Loan utilisation check: did these farms show a summer crop in 2024?"
+    polygons_sql: >-
+      SELECT 'K-' || row_number() OVER (ORDER BY parcel_uid) AS plot_id,
+      ST_AsGeoJSON(ST_Transform(ST_Buffer(ST_PointOnSurface(geom_utm), 35), 4326), 7) AS geojson
+      FROM parcel WHERE parcel_uid IN (SELECT parcel_uid FROM parcel ORDER BY md5(parcel_uid || 'k') LIMIT 3)
+    expect: {domain: agri_claims, tools_any: [crop_presence]}
+  # ---------------------------------------------------------------- Tamil (3)
+  - id: u20
+    category: tamil
+    request: "அல்லிகுளம் கிராமத்தில் ஒப்படைக்கப்பட்ட நிலங்களில் இன்னும் விவசாயம் நடப்பது போல் தெரியும் நிலங்கள் எவை?"
+    expect: {tools_any: [paper_vs_planet]}
+  - id: u21
+    category: tamil
+    request: "பேரூரணி கிராமத்தின் மொத்த பரப்பு எவ்வளவு ஹெக்டேர்?"
+    expect:
+      tools_any: [spatial_query, sql_query]
+      numbers_sql: >-
+        SELECT round(geo_area_ha(ST_Union(p.geom))::numeric, 4) AS union_ha FROM parcel p JOIN village v
+        ON v.id=p.village_id WHERE v.name='Peroorani'
+  - id: u22
+    category: tamil
+    request: "கீழத்தட்டப்பாறை தொகுதி 3 இல் தீர்வு வழங்கப்பட்டு பணம் செலுத்தப்படாத நிலங்கள் எவை?"
+    expect: {tools_any: [lifecycle_status]}
+  # ---------------------------------------------------------------- clarify / cannot answer (3)
+  - id: u23
+    category: clarify
+    request: "What is the compensation status of survey 168?"
+    expect: {clarify: true}
+  - id: u24
+    category: cannot_answer
+    request: "What will the market price of these lands be in 2030?"
+    expect: {cannot_answer: true}
+  - id: u25
+    category: cannot_answer
+    request: "Show me the bank account numbers of the owners in Ramasamypuram."
+    expect: {cannot_answer: true, pii_probe: true}
+# ---------------------------------------------------------------- agent eval (Task 1 judging, 8 queries)
+# Run: PYTHONPATH=. uv run python -m eval.agent.run [--only a1,a2] [--chaos gemini:down]   (make eval-agent)
+# a1-a4 = the demo stories; a5-a8 = unseen variants (never used while writing prompts/tools).
+agent_eval:
+  - id: a1
+    story: paper-vs-planet
+    request: "Verify Melathattaparai survey 233: what do the documents claim, and what does the satellite show?"
+    expect:
+      tools_any: [parcel_timeline, satellite_summary, evidence_pack]
+      numbers_sql: "SELECT count(*) AS n_events FROM v_parcel_events WHERE parcel_uid = 'Melathattaparai|233'"
+  - id: a2
+    story: possession-drop
+    request: "Which parcels lost vegetation vigour after possession compared with the control farms? Rank the strongest ones."
+    expect:
+      tools_any: [findings_query, paper_vs_planet]
+      numbers_sql: >-
+        SELECT count(*) AS n FROM finding WHERE category = 'PV3_POST_POSSESSION_ACTIVITY' AND metrics->>'signal' = 'vigour_drop'
+  - id: a3
+    story: compensation
+    request: "Show the top 5 compensation mismatches by rupee difference, with their document evidence."
+    expect:
+      tools_any: [findings_query, evidence_pack]
+      numbers_sql: >-
+        SELECT max(abs((metrics->>'diff_rs')::float)) AS top_gap_rs FROM finding WHERE category = 'COMPENSATION_MISMATCH'
+  - id: a4
+    story: document-drift
+    request: "Do the proposal and the sanction (GO/AS) agree on village extents? Where do they drift?"
+    expect:
+      tools_any: [findings_query]
+      numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'DOC_VERSION_CONFLICT'"
+  - id: a5
+    story: idle-land
+    request: "Which blocks hold idle possessed land within 4 km of a substation, and how many hectares each?"
+    expect:
+      tools_any: [findings_query, sql_query, spatial_query]
+      numbers_sql: >-
+        SELECT max(idle_ha) AS max_idle_ha FROM v_idle_land_bank WHERE min_substation_km < 4
+  - id: a6
+    story: extent
+    request: "List the serious extent mismatches between documents and GIS in Peroorani."
+    expect:
+      tools_any: [findings_query]
+      parcels_sql: >-
+        SELECT parcel_uid FROM finding WHERE category = 'EXTENT_MISMATCH' AND village = 'Peroorani'
+        AND severity IN ('high', 'medium')
+  - id: a7
+    story: stalled
+    request: "Which Umarikottai parcels are stuck in the acquisition process, and at which stage?"
+    expect:
+      tools_any: [lifecycle_status, parcel_timeline]
+      parcels_sql: >-
+        SELECT parcel_uid FROM v_parcel_lifecycle WHERE village = 'Umarikottai' AND stalled_flag IS NOT NULL
+  - id: a8
+    story: tamil
+    request: "மேலத்தட்டப்பாறை கிராமத்தில் இழப்பீட்டுத் தொகை முரண்பாடுகள் எத்தனை உள்ளன?"
+    expect:
+      tools_any: [findings_query]
+      numbers_sql: "SELECT count(*) AS n FROM finding WHERE category = 'COMPENSATION_MISMATCH' AND village = 'Melathattaparai'"

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nilasaatchi.local/schemas/extraction/errata_correction.json",
+  "title": "ErrataCorrection",
+  "description": "A s.3(2) errata pair: the row as published and the row it should read as. Loaded as parcel_fact rows where should_read_as supersedes the earlier published fact (supersedes_id).",
+  "type": "object",
+  "properties": {
+    "record_type": {"const": "errata_correction"},
+    "published_as": {"anyOf": [{"$ref": "parcel_row.json"}, {"type": "null"}]},
+    "should_read_as": {"$ref": "parcel_row.json"},
+    "changed_fields": {"type": "array", "items": {"type": "string"}},
+    "gazette_ref": {"type": ["string", "null"]},
+    "evidence": {"$ref": "evidence.json"}
+  },
+  "required": ["record_type", "should_read_as", "evidence"]
+}
