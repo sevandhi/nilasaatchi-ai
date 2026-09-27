@@ -8,6 +8,7 @@ import { Widget } from "../components/common/Widget.jsx";
 import { PlanPanel } from "../components/agent/PlanPanel.jsx";
 import { SqlPanel } from "../components/agent/SqlPanel.jsx";
 import { LedgerDrawer } from "../components/agent/LedgerDrawer.jsx";
+import { RunProgress } from "../components/agent/RunProgress.jsx";
 import { KpiCard } from "../components/common/KpiCard.jsx";
 import { ChartWidget } from "../components/charts/ChartWidget.jsx";
 import { DataTable } from "../components/common/DataTable.jsx";
@@ -29,6 +30,7 @@ export function AgentConsole() {
   const run = useRunEvents(runId);
   const autoSubmitted = useRef(false);
   const [trace, setTrace] = useState(null);
+  const [startedAt, setStartedAt] = useState(null);   // for the live timer (null for replayed history runs)
 
   async function submit(requestText) {
     setSubmitting(true);
@@ -52,6 +54,7 @@ export function AgentConsole() {
       setSubmitError(res.message);
       return;
     }
+    setStartedAt(Date.now());
     setRunId(res.data.run_id);
   }
 
@@ -121,57 +124,59 @@ export function AgentConsole() {
             </Widget>
           </>
         )}
-        {runId && <p className="mt-2 font-mono text-[11px] text-gray-400">run: {runId} · SSE: {run.connection}</p>}
       </div>
 
       {runId && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <div className="rounded-lg border border-gray-200 bg-white p-3">
-            <h2 className="mb-2 text-sm font-semibold text-gray-600">Live plan &amp; verification</h2>
-            <PlanPanel run={run} trace={trace} />
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[19rem_1fr]">
+          <div className="self-start lg:sticky lg:top-2">
+            <RunProgress run={run} startedAt={startedAt} />
           </div>
-          <div className="space-y-4">
-            <div className="rounded-lg border border-gray-200 bg-white p-3">
-              <h2 className="mb-2 text-sm font-semibold text-gray-600">SQL / GIS operations</h2>
-              <SqlPanel entries={workspace?.sql} />
-            </div>
-            <div className="rounded-lg border border-gray-200 bg-white p-3">
-              <h2 className="mb-2 text-sm font-semibold text-gray-600">Ledger</h2>
-              <LedgerDrawer runId={runId} entries={run.ledgerEntries} head={trace?.ledger_head || run.ledgerHead} />
-            </div>
+          <div className="min-w-0 space-y-4">
+            {workspace ? (
+              <AnswerCard workspace={workspace} />
+            ) : run.clarify ? (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                <b>The agent needs more information:</b> {run.clarify.question}
+              </div>
+            ) : run.error ? (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{run.error.message}</div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-gray-300 bg-white p-6" data-testid="answer-placeholder">
+                <div className="mb-3 text-sm text-gray-500">The answer will appear here when the agent finishes (usually 30–60 seconds).</div>
+                <div className="space-y-2">
+                  <div className="h-3 w-3/4 animate-pulse rounded bg-gray-200" />
+                  <div className="h-3 w-full animate-pulse rounded bg-gray-200" />
+                  <div className="h-3 w-5/6 animate-pulse rounded bg-gray-200" />
+                </div>
+              </div>
+            )}
+
+            {(run.verify || run.critics.length > 0 || run.judge) && <CheckSummary run={run} />}
+
+            <details className="group rounded-xl border border-gray-200 bg-white" data-testid="technical-details">
+              <summary className="cursor-pointer select-none px-4 py-3 text-sm font-semibold text-gray-700">
+                Technical details <span className="font-normal text-gray-400">(plan steps, model choices, SQL, audit ledger)</span>
+              </summary>
+              <div className="space-y-4 border-t px-4 py-3">
+                <PlanPanel run={run} trace={trace} />
+                <div>
+                  <h3 className="mb-1 text-xs font-semibold uppercase text-gray-500">SQL / GIS operations</h3>
+                  <SqlPanel entries={workspace?.sql} />
+                </div>
+                <div>
+                  <h3 className="mb-1 text-xs font-semibold uppercase text-gray-500">Audit ledger</h3>
+                  <LedgerDrawer runId={runId} entries={run.ledgerEntries} head={trace?.ledger_head || run.ledgerHead} />
+                </div>
+                <p className="font-mono text-[11px] text-gray-400">run {runId} · live connection: {run.connection}</p>
+              </div>
+            </details>
           </div>
         </div>
       )}
 
-      {workspace && (
-        <div className="space-y-3 rounded-lg border border-gray-200 bg-white p-3">
-          <h2 className="text-sm font-semibold text-gray-600">Result: {workspace.title}</h2>
-          {workspace.narrative?.en && <p className="text-sm text-gray-700">{workspace.narrative.en}</p>}
-          {workspace.caveats?.length ? (
-            <ul className="list-disc pl-4 text-xs text-amber-700">
-              {workspace.caveats.map((c, i) => <li key={i}>{c}</li>)}
-            </ul>
-          ) : null}
-          {workspace.kpis?.length ? (
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {workspace.kpis.map((k) => <KpiCard key={k.id} kpi={k} />)}
-            </div>
-          ) : null}
-          {workspace.charts?.map((c) => <ChartWidget key={c.id} spec={c} />)}
-          {workspace.tables?.map((t) => (
-            <div key={t.id}>
-              <h3 className="mb-1 text-xs font-semibold text-gray-500">{t.title}</h3>
-              <DataTable columns={t.columns} rows={t.rows} csvName={t.id} />
-            </div>
-          ))}
-          {workspace.map?.layers?.length ? (
-            <MapView layers={workspace.map.layers.map((l) => ({ ...l, kind: l.kind === "parcels" ? "parcels" : "reference" }))} height="24rem" />
-          ) : null}
-        </div>
-      )}
-
-      <div className="rounded-lg border border-gray-200 bg-white p-3">
-        <h2 className="mb-2 text-sm font-semibold text-gray-600">Run history</h2>
+      <details className="rounded-xl border border-gray-200 bg-white p-3" open={!runId}>
+        <summary className="cursor-pointer select-none text-sm font-semibold text-gray-600">Earlier runs{history.data ? ` (${history.data.items?.length || 0})` : ""}</summary>
+        <div className="mt-2">
         <Widget status={history.status} error={history.error} onRetry={history.reload} title="Run history" minHeight="4rem" emptyReason="No runs recorded yet.">
           <DataTable
             columns={[
@@ -182,12 +187,111 @@ export function AgentConsole() {
               { key: "updated_at", label: "Updated" },
             ]}
             rows={(history.data?.items || []).map((r) => ({ ...r, created_at: fmtDate(r.created_at) + " " + new Date(r.created_at).toLocaleTimeString(), updated_at: fmtDate(r.updated_at) }))}
-            onRowClick={(r) => setRunId(r.id)}
+            onRowClick={(r) => { setStartedAt(null); setRunId(r.id); }}
             rowKey={(r) => r.id}
             selectedKey={runId}
             csvName="run-history"
           />
         </Widget>
+        </div>
+      </details>
+    </div>
+  );
+}
+
+// "[c_s1_0]" claim markers in the narrative -> small grey tags
+function Narrative({ text }) {
+  const parts = String(text || "").split(/(\[c_[a-z0-9_]+\])/i);
+  return (
+    <p className="text-[15px] leading-relaxed text-gray-800">
+      {parts.map((p, i) => (/^\[c_/i.test(p)
+        ? <span key={i} className="mx-0.5 rounded bg-gray-100 px-1 align-middle font-mono text-[10px] text-gray-500" title="claim id (see Technical details)">{p.slice(1, -1)}</span>
+        : <span key={i}>{p}</span>))}
+    </p>
+  );
+}
+
+function AnswerCard({ workspace }) {
+  return (
+    <div className="space-y-4 rounded-xl border border-emerald-200 bg-white p-5 shadow-sm" data-testid="answer-card">
+      <div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Answer</div>
+        <h2 className="mt-0.5 text-lg font-semibold text-gray-900">{workspace.title}</h2>
+      </div>
+      {workspace.narrative?.en && <Narrative text={workspace.narrative.en} />}
+      {workspace.kpis?.length ? (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {workspace.kpis.map((k) => <KpiCard key={k.id} kpi={k} />)}
+        </div>
+      ) : null}
+      {workspace.charts?.map((c) => <ChartWidget key={c.id} spec={c} />)}
+      {workspace.tables?.map((t) => (
+        <div key={t.id}>
+          <h3 className="mb-1 text-xs font-semibold uppercase text-gray-500">{t.title}</h3>
+          <DataTable columns={t.columns} rows={t.rows} csvName={t.id} />
+        </div>
+      ))}
+      {workspace.map?.layers?.length ? (
+        <MapView layers={workspace.map.layers.map((l) => ({ ...l, kind: l.kind === "parcels" ? "parcels" : "reference" }))} height="22rem" />
+      ) : null}
+      {workspace.caveats?.length ? (
+        <div className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          <b>Keep in mind:</b>
+          <ul className="mt-0.5 list-disc pl-4">{workspace.caveats.map((c, i) => <li key={i}>{c}</li>)}</ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+const human = (s) => String(s || "").replace(/_/g, " ");
+const VERDICT_TEXT = { ACCEPT: "accepted: the checks support it", REVIEW: "needs a person to look", DOWNGRADE: "kept, but with lower confidence", REROUTE: "re-checked with another route" };
+
+/** Plain-language summary of how the answer was checked: automatic checks, the second opinion, the verdicts. */
+function CheckSummary({ run }) {
+  const critic = run.critics.find((c) => !c.skipped);
+  const counts = {};
+  (run.judge?.verdicts || []).forEach((v) => { counts[v.verdict] = (counts[v.verdict] || 0) + 1; });
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-4" data-testid="check-summary">
+      <h3 className="mb-3 text-sm font-semibold text-gray-700">How the answer was checked</h3>
+      <div className="grid gap-3 md:grid-cols-3">
+        <div className="rounded-lg bg-gray-50 p-3">
+          <div className="text-xs font-semibold uppercase text-gray-500">Automatic checks</div>
+          {run.verify ? (
+            <>
+              <div className={`mt-1 text-base font-semibold ${run.verify.passed === run.verify.claims_checked ? "text-emerald-700" : "text-amber-700"}`}>
+                {run.verify.passed} of {run.verify.claims_checked} passed
+              </div>
+              <ul className="mt-1 space-y-0.5 text-xs text-gray-600">
+                {(run.verify.checks || []).slice(0, 4).map((c, i) => <li key={i}>{c.passed ? "✓" : "✗"} {human(c.name)}</li>)}
+              </ul>
+            </>
+          ) : <div className="mt-1 text-xs text-gray-400">running…</div>}
+        </div>
+        <div className="rounded-lg bg-gray-50 p-3">
+          <div className="text-xs font-semibold uppercase text-gray-500">Second opinion</div>
+          {critic ? (
+            <>
+              <div className={`mt-1 text-base font-semibold ${critic.result?.refuted ? "text-rose-700" : "text-emerald-700"}`}>
+                {critic.result?.refuted ? "Found a problem" : "Claim held"}
+              </div>
+              <p className="mt-1 text-xs text-gray-600">
+                A model from a different company ({critic.vendor || "another vendor"}) tried to prove the answer wrong: <i>&ldquo;{critic.hypothesis}&rdquo;</i>
+              </p>
+            </>
+          ) : <div className="mt-1 text-xs text-gray-400">{run.critics.length ? "skipped" : "running…"}</div>}
+        </div>
+        <div className="rounded-lg bg-gray-50 p-3">
+          <div className="text-xs font-semibold uppercase text-gray-500">Final verdicts</div>
+          {run.judge ? (
+            <ul className="mt-1 space-y-0.5 text-xs text-gray-700">
+              {Object.entries(counts).map(([k, n]) => (
+                <li key={k}><b>{n}</b> {n === 1 ? "claim" : "claims"} {VERDICT_TEXT[k] || k.toLowerCase()}</li>
+              ))}
+            </ul>
+          ) : <div className="mt-1 text-xs text-gray-400">running…</div>}
+        </div>
       </div>
     </div>
   );

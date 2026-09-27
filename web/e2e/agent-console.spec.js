@@ -12,12 +12,20 @@ test("agent console runs an example query and shows plan, steps, critic and judg
   await expect(chip).toBeVisible({ timeout: 15000 });
   await chip.click();
 
-  const planPanel = page.getByTestId("plan-panel");
-  await expect(planPanel).toBeVisible({ timeout: 90000 });
-  await expect(planPanel.getByText(/goal:/i)).toBeVisible({ timeout: 90000 });
-  await expect(page.getByText(/Critic challenges/i)).toBeVisible({ timeout: 150000 });
-  await expect(page.getByText(/Judge verdicts/i)).toBeVisible({ timeout: 60000 });
+  // live progress timeline, then the plain-language check summary and the answer
+  await expect(page.getByTestId("run-progress")).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId("stage-plan")).toHaveAttribute("data-state", "done", { timeout: 90000 });
+  await expect(page.getByTestId("check-summary").getByText(/Second opinion/i)).toBeVisible({ timeout: 150000 });
+  await expect(page.getByTestId("check-summary").getByText(/Final verdicts/i)).toBeVisible();
+  await expect(page.getByTestId("answer-card")).toBeVisible({ timeout: 60000 });
   await page.screenshot({ path: "../docs/screens/05-agent-console.png", fullPage: true });
+
+  // technical details: full plan with model choices, critic and judge detail, ledger
+  await page.getByTestId("technical-details").locator("summary").click();
+  const planPanel = page.getByTestId("plan-panel");
+  await expect(planPanel.getByText(/goal:/i)).toBeVisible();
+  await expect(page.getByText(/Critic challenges/i)).toBeVisible();
+  await expect(page.getByText(/Judge verdicts/i)).toBeVisible();
 
   // Ledger verify button (POST /ledger/verify?run_id=)
   await page.getByRole("button", { name: /Verify ledger/i }).click();
@@ -34,7 +42,9 @@ test("chaos toggle sends a chaos spec and, if the backend honours it, shows an a
 
   const planPanel = page.getByTestId("plan-panel");
   try {
-    await expect(planPanel).toBeVisible({ timeout: 90000 });
+    await expect(page.getByTestId("stage-plan")).toHaveAttribute("data-state", "done", { timeout: 90000 });
+    await page.getByTestId("technical-details").locator("summary").click();
+    await expect(planPanel).toBeVisible({ timeout: 10000 });
     // Wait for the run to reach a terminal state (result or error) rather than a fixed sleep.
     await expect(page.getByText(/Judge verdicts|goal:.*$/i).first()).toBeVisible({ timeout: 90000 });
   } catch {

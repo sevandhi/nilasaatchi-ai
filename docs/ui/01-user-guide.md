@@ -83,7 +83,10 @@ The agent console uses AI models; the free tiers need the keys in `.env`.
 | Component | What it shows |
 |---|---|
 | Question box + example chips | Type a question or click an example (English or Tamil) → **Run** |
-| **Live plan & verification** | The plan steps as they are created; each step shows the tool or model, time, tokens and cost. **"why?"** shows the router's decision (which models were considered, filtered out and why, scores, the privacy tier) |
+| **Progress timeline** (left) | A vertical line of the agent's stages: understanding → plan → looking up data → checking numbers → second opinion → verdicts → answer. Grey = waiting, pulsing blue = working, green = done, red = stopped, with a running timer ("Working… 12s" → "✓ Done in 39s") |
+| **Answer** (right, first) | The answer card: title, narrative, key numbers, table, map, and "Keep in mind" caveats. While working, a placeholder says the answer will appear here |
+| **How the answer was checked** | Three plain cards: automatic checks passed, the second opinion (a model from another company tried to prove it wrong), and the final verdicts |
+| **Technical details** (collapsed) | The full plan with each step's tool/model, time, tokens and cost; **"why?"** shows the router's decision (models considered, filtered out and why, scores, privacy tier); SQL; the audit ledger |
 | Verifier checks | Deterministic checks (e.g. SQL re-run, confidence-interval check), each ✓ or ✗ |
 | Critic challenges | A different AI vendor tries to prove a claim wrong, with its hypothesis, the test it ran and the outcome |
 | Judge | The final verdict per claim (accept / downgrade / reroute / review) |
