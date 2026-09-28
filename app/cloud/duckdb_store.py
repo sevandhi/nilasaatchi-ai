@@ -190,3 +190,17 @@ def list_runs(store: SnapshotStore, *, status: str | None = None, limit: int = 5
         [path, *params, limit, offset],
     )
     return {"items": rows, "total": total, "limit": limit, "offset": offset}
+
+
+def document_meta(store: SnapshotStore, document_id: int) -> dict | None:
+    """Page count and plain details of one document (the document viewer's prev / next), from the catalogue table."""
+    conn = _connect(store, "documents")
+    if conn is None:
+        return None
+    con, path = conn
+    row = con.execute("SELECT id, pages, classified_type, stage, village, folder_label, "
+                      "regexp_replace(path, '^.*/', '') AS file_name FROM read_parquet(?) WHERE id = ?",
+                      [path, document_id]).fetchone()
+    if row is None:
+        return None
+    return dict(zip(["id", "pages", "classified_type", "stage", "village", "folder_label", "file_name"], row, strict=True))

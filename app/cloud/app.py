@@ -38,6 +38,21 @@ _NOT_READONLY = JSONResponse(
 )
 
 
+# UI pages whose path is also an API list endpoint (same origin in the cloud): a browser navigation
+# (Accept: text/html, e.g. a shared link or a refresh) gets the app; the UI's data fetches get JSON.
+_SPA_API_OVERLAP = {"/findings", "/documents"}
+
+
+@app.middleware("http")
+async def _spa_for_browser_navigation(request: Request, call_next):
+    if (request.method == "GET" and request.url.path in _SPA_API_OVERLAP
+            and "text/html" in request.headers.get("accept", "")):
+        index = get_cloud_settings().static_dir / "index.html"
+        if index.is_file():
+            return FileResponse(index, media_type="text/html")
+    return await call_next(request)
+
+
 @app.middleware("http")
 async def _read_only_guard(request: Request, call_next):
     if request.method not in ("GET", "HEAD", "OPTIONS"):
@@ -96,6 +111,9 @@ _META_FILES = {
     "/idle-land": "meta/idle_land.json",
     "/ingest/doc-types": "meta/ingest_doc_types.json",
     "/ingest/satellite/status": "meta/ingest_satellite_status.json",
+    "/findings/facets": "meta/findings_facets.json",
+    "/documents/facets": "meta/documents_facets.json",
+    "/review-queue/facets": "meta/review_facets.json",
 }
 for _path, _rel in _META_FILES.items():
     def _make(rel: str):
@@ -171,6 +189,17 @@ async def list_findings(category: str | None = None, severity: str | None = None
     return _json(result)
 
 
+@app.get("/findings/{finding_id}/plain-summary", tags=["findings"])
+async def get_plain_summary(finding_id: int, lang: str = Query("en", pattern="^(en|ta)$")) -> Response:
+    import asyncio
+
+    from app.cloud.explain import explain
+    out = await asyncio.to_thread(explain, get_store(), finding_id, lang)
+    if out is None:
+        raise HTTPException(status_code=404, detail="finding not found")
+    return _json(out)
+
+
 @app.get("/findings/{finding_id}/evidence-pack", tags=["findings"])
 async def get_evidence_pack(finding_id: int, render_chips: bool = False) -> Response:
     # `render_chips` is accepted for URL/query-shape parity but ignored: the cloud snapshot only
@@ -190,6 +219,19 @@ async def list_documents(village: str | None = None, classified_type: str | None
     if result is None:
         raise HTTPException(status_code=404, detail="documents table missing from the cloud snapshot")
     return _json(result)
+
+
+@app.get("/documents/{document_id}/meta", tags=["documents"])
+async def get_document_meta(document_id: int) -> Response:
+    row = duckdb_store.document_meta(get_store(), document_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="document not found")
+    return _json(row)
+
+
+@app.get("/review/{review_id}/rows", tags=["review"])
+async def get_review_rows(review_id: int) -> Response:
+    return _verbatim(f"review/{review_id}__rows.json", not_found="review item not found in the cloud snapshot")
 
 
 @app.get("/documents/{document_id}/pages/{page_no}.webp", tags=["documents"])

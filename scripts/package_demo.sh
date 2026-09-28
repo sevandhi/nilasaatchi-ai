@@ -2,7 +2,7 @@
 # Build a self-contained demo bundle to copy to another machine:
 #   dist/nilasaatchi-demo/            code (no Dataset/, Documents/, ref/, .env, venvs, node_modules)
 #   dist/nilasaatchi-demo/bundle/     nilasaatchi.dump (database) + data.tar.gz (runtime data only)
-#   dist/nilasaatchi-demo.zip         the same, as one file to share
+#   dist/updated_demo.zip             the same, as one file to share (ZIP_NAME=… to rename)
 # On the new machine: unzip nilasaatchi-demo.zip && cd nilasaatchi-demo && bash scripts/demo_setup.sh
 # The bundle contains real land records (owner names masked in the UI): share it only within the team.
 set -euo pipefail
@@ -24,12 +24,13 @@ ls -lh "$OUT/bundle/nilasaatchi.dump" | awk '{print "   " $5}'
 say "Runtime data (page images, satellite tables + chips, model, logs the UI reads, demo upload files)"
 tar -czf "$OUT/bundle/data.tar.gz" \
   data/pages data/models data/extract data/eval data/runs data/doctor.json data/aws_spend.json \
-  data/router_log.sqlite data/quota.sqlite data/demo_uploads \
+  data/router_log.sqlite data/quota.sqlite data/demo_uploads $( [ -d data/summaries ] && echo data/summaries ) \
   $(ls data/s2/*.parquet data/s2/*.json data/s2/*.jsonl 2>/dev/null) data/s2/chips data/s2/panels data/s2/labels data/s2/controls
 ls -lh "$OUT/bundle/data.tar.gz" | awk '{print "   " $5}'
 
 say "Single-file bundle (zip)"
-rm -f dist/nilasaatchi-demo.zip dist/nilasaatchi-demo.tar
-(cd dist && zip -qr -y nilasaatchi-demo.zip nilasaatchi-demo -n .gz:.dump)   # already-compressed parts stored as-is
-ls -lh dist/nilasaatchi-demo.zip | awk '{print "   dist/nilasaatchi-demo.zip  " $5}'
-echo "Share it; on the new machine: unzip nilasaatchi-demo.zip && cd nilasaatchi-demo && bash scripts/demo_setup.sh && bash scripts/demo_run.sh"
+ZIP=${ZIP_NAME:-updated_demo.zip}
+rm -f "dist/$ZIP"
+(cd dist && zip -qr -y "$ZIP" nilasaatchi-demo -n .gz:.dump)   # already-compressed parts stored as-is
+ls -lh "dist/$ZIP" | awk -v z="$ZIP" '{print "   dist/" z "  " $5}'
+echo "Share it; on the new machine: unzip $ZIP && cd nilasaatchi-demo && bash scripts/demo_setup.sh (Windows: SETUP-WINDOWS.cmd) && bash scripts/demo_run.sh"

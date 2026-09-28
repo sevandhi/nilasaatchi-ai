@@ -14,7 +14,7 @@ rm -rf "$BUILD"/boto3 "$BUILD"/botocore "$BUILD"/*.dist-info/RECORD 2>/dev/null 
 echo "==> app code"
 mkdir -p "$BUILD/app"
 cp app/__init__.py "$BUILD/app/"
-rsync -a --exclude='__pycache__' --exclude='ENDPOINTS.md' app/cloud "$BUILD/app/"
+rsync -a --exclude="__pycache__" --exclude="ENDPOINTS.md" app/cloud app/common "$BUILD/app/"
 
 echo "==> read-only web build (static/)"
 (cd web && npm run --silent build:cloud >/dev/null)

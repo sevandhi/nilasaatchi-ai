@@ -52,7 +52,7 @@ DATABASE_URL = os.environ.get(
 SNAPSHOT_DIR = REPO_ROOT / "data" / "cloud" / "snapshot"
 WORKERS = int(os.environ.get("CLOUD_EXPORT_WORKERS", "24"))
 
-SEASONS = [f"{y}-{s}" for y in range(2019, 2027) for s in ("kharif", "rabi", "summer")]
+SEASONS = ["2018-rabi", "2018-summer"] + [f"{y}-{s}" for y in range(2019, 2027) for s in ("kharif", "rabi", "summer")]
 # Only the layer names the web UI actually requests (web/src/pages/MapWorkspace.jsx) — "survey",
 # "ref_layer_rail_stations", "ref_layer_airport" and "ref_layer_seaport" exist in the registry but
 # are never fetched by the UI, so they are not part of the cloud demo's bounded key space.
@@ -191,6 +191,9 @@ def export_meta(api: ApiClient) -> None:
         ("/idle-land", None, "meta/idle_land.json"),
         ("/ingest/doc-types", None, "meta/ingest_doc_types.json"),
         ("/ingest/satellite/status", None, "meta/ingest_satellite_status.json"),
+        ("/findings/facets", None, "meta/findings_facets.json"),
+        ("/documents/facets", None, "meta/documents_facets.json"),
+        ("/review-queue/facets", None, "meta/review_facets.json"),
     ]
     for path, params, rel in jobs:
         # Never owner/PII-bearing (router config, docs/metrics.md tables, aggregate views) — skip
@@ -282,6 +285,30 @@ def export_run_details(api: ApiClient, conn: psycopg.Connection) -> None:
         futs = [ex.submit(_one, rid) for rid in ids]
         for f in as_completed(futs):
             f.result()
+
+
+def export_review_rows(api: ApiClient, conn: psycopg.Connection) -> None:
+    """GET /review/{id}/rows for every open review item (the rows read from that page; no owner names)."""
+    ids = [r["id"] for r in conn.execute("SELECT id FROM review_queue WHERE status = 'open' ORDER BY id").fetchall()]
+    print(f"review: {len(ids)} page row sets ...")
+
+    def _one(rid: int) -> None:
+        _fetch_and_store(api, f"/review/{rid}/rows", None, f"review/{rid}__rows.json")
+
+    with ThreadPoolExecutor(max_workers=WORKERS) as ex:
+        for f in as_completed([ex.submit(_one, rid) for rid in ids]):
+            f.result()
+
+
+def export_summaries() -> None:
+    """Plain-language finding explanations already generated locally (data/summaries) -> snapshot, so the
+    cloud reuses them instead of calling Bedrock again."""
+    src = Path(os.environ.get("DATA_DIR", REPO_ROOT / "data")) / "summaries"
+    n = 0
+    for f in sorted(src.glob("*.json")) if src.exists() else []:
+        _write_bytes(f"summaries/{f.name}", f.read_bytes())
+        n += 1
+    print(f"summaries: {n} cached explanations copied")
 
 
 def export_findings_packs(api: ApiClient, conn: psycopg.Connection) -> None:
@@ -516,6 +543,8 @@ def main() -> int:
             export_findings_packs(api, conn)
             export_evidence(api, conn)
             export_run_details(api, conn)
+            export_review_rows(api, conn)
+        export_summaries()
     finally:
         conn.close()
 
