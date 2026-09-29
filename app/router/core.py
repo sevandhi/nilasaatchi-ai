@@ -129,6 +129,11 @@ class Router:
                             check_credentials=(mode != "replay"), doctor=self.doctor)
         eligible, filtered = filter_candidates(self.registry, tspec, ctx, self.breaker, self.quota,
                                                self._credentials, spend=self._spend_check)
+        env_ex = {m.strip() for m in os.environ.get("ROUTER_EXCLUDE_MODELS", "").split(",") if m.strip()}
+        if env_ex:                               # deployment-level exclusion (e.g. a server without AWS credentials)
+            filtered = list(filtered) + [{"id": c.spec.id, "reason": "excluded by deployment (ROUTER_EXCLUDE_MODELS)"}
+                                         for c in eligible if c.spec.id in env_ex]
+            eligible = [c for c in eligible if c.spec.id not in env_ex]
         if exclude_models:                       # caller-side exclusion (agent reroute after a refuted claim)
             ex = set(exclude_models)
             filtered = list(filtered) + [{"id": c.spec.id, "reason": "excluded by caller (reroute)"}

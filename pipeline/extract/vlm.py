@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import time
 from pathlib import Path
 
@@ -30,7 +31,8 @@ SECOND_PROMPT_PATH = REPO_ROOT / "prompts" / "extract_table_second.md"
 SCHEMA_PATH = REPO_ROOT / "schemas" / "extraction" / "vlm_page.json"
 CACHE_DIR = REPO_ROOT / "data" / "extract" / "cache" / "vlm"
 
-PREFERRED_MODEL = "bedrock-ministral-8b"   # first model of table_read_pii / table_second_read_pii
+PREFERRED_MODEL = os.environ.get("EXTRACT_PREFERRED_MODEL", "bedrock-ministral-8b")   # first model of table_read_pii /
+# table_second_read_pii; a deployment without Bedrock (no AWS credentials) sets it to its reader, e.g. groq-qwen-vl
 QUOTA_RETRIES = 2
 QUOTA_WAIT_S = 62
 
@@ -113,7 +115,7 @@ def transcribe(image_path: Path, doc_type: str | None, privacy_tier: str, route:
     if not allow_calls:
         return {"ok": False, "data": None, "error": "not cached and calls disabled", "from_cache": False,
                 "cache_key": key, "tokens_in": 0, "tokens_out": 0, "cost_usd": 0.0, "model_id": None}
-    from app.router import call   # all hosted calls go through the router (task routing only)
+    from app.router import call  # all hosted calls go through the router (task routing only)
 
     payload = {"instruction": prompt, "max_tokens": spec["max_tokens"], "step_id": f"extract-{key[:10]}"}
     t0 = time.time()

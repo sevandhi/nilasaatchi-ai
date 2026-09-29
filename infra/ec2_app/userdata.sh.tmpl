@@ -1,0 +1,123 @@
+#!/bin/bash
+# First-boot setup of the NilaSaatchi full app on one EC2 server (D-079). Filled in by app.sh deploy with short-lived
+# presigned S3 links (the server has no AWS credentials). Progress goes to /var/log/nila-setup.log and the serial
+# console, lines prefixed "NILA:" (GetConsoleOutput is currently denied to the team roles).
+set -euxo pipefail
+export HOME=/root
+exec > >(tee -a /var/log/nila-setup.log | tee /dev/console) 2>&1
+# progress readable at http://<server>/setup-status.txt (links and keys redacted) since the console log is denied
+STATUS=/var/www/html/setup-status.txt; mkdir -p /var/www/html
+say() { echo "NILA: $*"; echo "$(date -u +%T) $*" >> "$STATUS"; }
+redact() { sed -E 's/(https?:\/\/[^ "]*\?)[^ "]*/\1<redacted>/g; s/((KEY|TOKEN|SECRET|PASSWORD)[A-Z_]*=)[^ ]*/\1<redacted>/g'; }
+trap 'rc=$?; say "FAILED (exit $rc) at line $LINENO"; tail -30 /var/log/nila-setup.log | redact >> "$STATUS"' ERR
+[ -f /opt/nila/.setup-done ] && { say "already set up"; exit 0; }   # runs on every boot until setup completes
+say "setup start $(date -u +%FT%TZ)"
+
+# 4 GB swap (t3.small has 2 GB RAM) and an automatic stop 3 hours after every boot (cost guard)
+if [ ! -f /swapfile ]; then fallocate -l 4G /swapfile && chmod 600 /swapfile && mkswap /swapfile; fi
+swapon /swapfile 2>/dev/null || true
+grep -q '^/swapfile' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
+cat > /etc/systemd/system/nila-autostop.service <<'EOF'
+[Unit]
+Description=NilaSaatchi cost guard: stop the server 3 hours after boot
+[Service]
+Type=oneshot
+ExecStart=/sbin/shutdown -h +180
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl enable --now nila-autostop.service
+
+say "packages"
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -q
+apt-get install -y -q docker.io docker-compose-v2 nginx unzip curl
+systemctl enable --now docker
+
+say "download bundle"
+mkdir -p /opt/nila && cd /opt/nila
+curl -fsSL "__CODE_URL__" -o /tmp/code.tar.gz && tar -xzf /tmp/code.tar.gz -C /opt/nila && rm /tmp/code.tar.gz
+curl -fsSL "__ENV_URL__" -o /opt/nila/.env && chmod 600 /opt/nila/.env
+mkdir -p bundle web/dist
+curl -fsSL "__DUMP_URL__" -o bundle/nilasaatchi.dump
+curl -fsSL "__WEB_URL__" -o /tmp/web.tar.gz && tar -xzf /tmp/web.tar.gz -C web/dist && rm /tmp/web.tar.gz
+curl -fsSL "__DATA_URL__" -o /tmp/data.tar.gz && tar -xzf /tmp/data.tar.gz -C /opt/nila && rm /tmp/data.tar.gz
+# this server has no AWS credentials: no Bedrock / Cost Explorer; tables are read by the free Groq vision model
+sed -i '/^AWS_PROFILE=/d' .env   # no ~/.aws on the server: a named (or empty) profile makes boto3 raise ProfileNotFound
+cat >> .env <<'EOF'
+
+# --- EC2 server overrides (infra/ec2_app) ---
+ROUTER_EXCLUDE_MODELS=bedrock-ministral-8b,bedrock-ministral-3b
+EXTRACT_PREFERRED_MODEL=groq-qwen-vl
+EOF
+
+say "database"
+docker compose build db
+docker compose up -d db
+docker update --restart unless-stopped "$(docker compose ps -q db)"
+# over TCP: the image first runs a socket-only temporary server for its init scripts, then restarts
+for i in $(seq 1 90); do docker compose exec -T db pg_isready -h 127.0.0.1 -U nila -d nilasaatchi && break; sleep 2; done
+docker compose exec -T db psql -U nila -d nilasaatchi -qc "DO \$\$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='agent_ro') THEN CREATE ROLE agent_ro NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT; END IF; END \$\$; GRANT agent_ro TO nila;"
+docker compose cp bundle/nilasaatchi.dump db:/tmp/nilasaatchi.dump
+docker compose exec -T db pg_restore -U nila -d nilasaatchi --no-owner /tmp/nilasaatchi.dump || true
+docker compose exec -T db psql -U nila -d nilasaatchi -Atc "select 'NILA: documents restored: ' || count(*) from document"
+
+say "OCR image"
+docker compose --profile tools build ocr-tools || say "OCR image build failed (uploads will not read tables)"
+
+say "python"
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH=/root/.local/bin:$PATH HOME=/root
+uv python install 3.12
+uv sync --no-group dev --no-group ocr
+export UV_NO_SYNC=1   # keep uv run from re-adding the heavy paddle OCR group
+uv pip install pytesseract pypdfium2 opencv-python-headless rapidfuzz indic-transliteration pillow
+uv run python scripts/migrate.py
+uv run playwright install --with-deps chromium || say "chromium install failed (PDF reports unavailable)"
+
+say "services"
+cat > /etc/systemd/system/nila-api.service <<'EOF'
+[Unit]
+Description=NilaSaatchi API
+After=docker.service network-online.target
+Wants=docker.service
+[Service]
+WorkingDirectory=/opt/nila
+Environment=PATH=/root/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=UV_NO_SYNC=1 HOME=/root
+ExecStartPre=/usr/bin/docker compose up -d db
+ExecStart=/root/.local/bin/uv run uvicorn app.api.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+[Install]
+WantedBy=multi-user.target
+EOF
+cat > /etc/nginx/sites-available/nila <<'EOF'
+server {
+  listen 80 default_server;
+  client_max_body_size 60m;
+  root /opt/nila/web/dist;
+  location /api/ {
+    proxy_pass http://127.0.0.1:8000/;
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+    proxy_set_header Host $host;
+    proxy_buffering off;          # live agent progress (server-sent events)
+    proxy_read_timeout 600s;
+  }
+  location = /setup-status.txt { root /var/www/html; }
+  location /assets/ { expires 7d; try_files $uri =404; }
+  location / { try_files $uri /index.html; }
+}
+EOF
+rm -f /etc/nginx/sites-enabled/default
+ln -sf /etc/nginx/sites-available/nila /etc/nginx/sites-enabled/nila
+chmod o+x /opt /opt/nila /opt/nila/web
+systemctl daemon-reload
+systemctl enable --now nila-api.service
+systemctl restart nginx
+for i in $(seq 1 60); do curl -fs http://127.0.0.1:8000/health && break; sleep 3; done
+say "health: $(curl -s -m 5 http://127.0.0.1:8000/health | head -c 200)"
+rm -f bundle/nilasaatchi.dump
+touch /opt/nila/.setup-done
+say "setup done $(date -u +%FT%TZ)"

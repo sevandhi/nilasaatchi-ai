@@ -101,3 +101,9 @@ Explorer, which lags by hours).
 
 **Bedrock from Lambda: now working (2026-09-27 18:36 UTC).** After FarmwiseAI enabled Bedrock on `FAI-TCE-LambdaExecutionRole`, `GET /health/bedrock` on the deployed Lambda called `mistral.ministral-3-3b-instruct` via Converse: `{"ok": true, "latency_ms": 167.1, "error": null}`. Lambda concurrency in this account is ~10 (a 30-request burst got 20× HTTP 503), so the UI retries GETs and images on 429/503.
 Teardown: `make cloud-down` (infra/cloud_demo/teardown.sh).
+| Security group | `fai-tce-team49-app-sg` (`sg-0b48a22b19362e1a9`) | 2026-09-29 18:38 UTC | — | inbound TCP 80 from 0.0.0.0/0 (HTTP to the app) |
+| EC2 instance | `fai-tce-team49-app` (`i-09373a6610c5d26a9`, t3.small, 30 GB gp3 encrypted) | 2026-09-29 18:38 UTC | — | full app (docker PostGIS + API + nginx), auto-stop 3 h after boot; no AWS credentials on the server (Bedrock excluded) |
+| (teardown) | EC2 `i-09373a6610c5d26a9` | — | 2026-09-29 19:31 UTC | first-boot setup failed (sed '&' bug in presigned links; ModifyInstanceAttribute denied), replaced with user OK |
+| EC2 instance | `fai-tce-team49-app` (`i-0f64136c3949fb2c8`, t3.small, 30 GB gp3 encrypted) | 2026-09-29 19:31 UTC | — | full app (docker PostGIS + API + nginx), auto-stop 3 h after boot; no AWS credentials on the server (Bedrock excluded) |
+| (teardown) | EC2 `i-0f64136c3949fb2c8` | — | 2026-09-29 20:21 UTC | setup failed (Postgres init restart race); replaced with user OK |
+| EC2 instance | `fai-tce-team49-app` (`i-0108997596ea50e48`, t3.small, 30 GB gp3 encrypted) | 2026-09-29 20:21 UTC | — | full app (docker PostGIS + API + nginx), auto-stop 3 h after boot; no AWS credentials on the server (Bedrock excluded) |

@@ -187,3 +187,15 @@ cloud-down:      ## D-067: tear down the cloud demo (asks for confirmation)
 eval-routes:     ## P7 T6.2: 8 agent queries under routed / all-open / all-proprietary (live free tiers)
 	bash scripts/eval_routes.sh
 .PHONY: eval-routes
+
+aws-app-deploy:  ## D-079: full app on one EC2 t3.small (uploads bundle, creates SG + server; confirm with the user first)
+	bash infra/ec2_app/app.sh deploy
+aws-app-start:   ## D-079: start the app server (auto-stops 3 h after boot)
+	bash infra/ec2_app/app.sh start
+aws-app-stop:    ## D-079: stop the app server (disk kept)
+	bash infra/ec2_app/app.sh stop
+aws-app-status:  ## D-079: server state, URL, setup progress
+	bash infra/ec2_app/app.sh status
+aws-app-down:    ## D-079: terminate the app server + its security group (asks first)
+	bash infra/ec2_app/app.sh down
+.PHONY: aws-app-deploy aws-app-start aws-app-stop aws-app-status aws-app-down
