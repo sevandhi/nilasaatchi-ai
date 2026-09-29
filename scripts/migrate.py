@@ -23,6 +23,11 @@ def main() -> None:
                 conn.execute(f.read_text())
                 conn.execute("INSERT INTO schema_migrations(name) VALUES (%s)", (f.name,))
             print(f"applied {f.name}")
+        # pg_restore creates materialized views but can fail to fill them (their SQL uses PostGIS types that are
+        # not on the restore's search_path), leaving "has not been populated" errors: fill any empty ones here
+        for schema, name in conn.execute("SELECT schemaname, matviewname FROM pg_matviews WHERE NOT ispopulated").fetchall():
+            conn.execute(f'REFRESH MATERIALIZED VIEW "{schema}"."{name}"')
+            print(f"refreshed materialized view {schema}.{name}")
     print(f"migrations up to date ({len(files)} files)")
 
 
